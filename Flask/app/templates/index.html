@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kot Platform Home</title>
+</head>
+<body>
+    <h1>Welkom op het Kot Platform</h1>
+    <form method="GET" action="/">
+        <label>Stad: <input type="text" name="stad"></label>
+        <label>Prijs max: <input type="number" name="prijs_max"></label>
+        <label>Slaapplaatsen: <input type="number" name="aantal_slaapplaatsen"></label>
+        <label>Eigen keuken: <input type="checkbox" name="eigen_keuken"></label>
+        <label>Eigen sanitair: <input type="checkbox" name="eigen_sanitair"></label>
+        <button type="submit">Zoeken</button>
+    </form>
+    <h2>Beschikbare koten</h2>
+    <ul>
+    {% for kot in koten %}
+        <li>
+            {{ kot.adres }} in {{ kot.stad }},
+            €{{ kot.prijs_per_nacht }} / nacht,
+            {{ kot.aantal_slaapplaatsen }} slaapplaatsen,
+            Eigen keuken: {{ 'ja' if kot.eigen_keuken else 'nee' }},
+            Eigen sanitair: {{ 'ja' if kot.eigen_sanitair else 'nee' }}
+        </li>
+    {% else %}
+        <li>Geen koten gevonden.</li>
+    {% endfor %}
+    </ul>
+    <a href="{{ url_for('login') }}">Inloggen</a> |
+    <a href="{{ url_for('register') }}">Registreren</a>
+</body>
+</html>

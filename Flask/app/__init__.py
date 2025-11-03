@@ -1,10 +1,19 @@
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__)
+    app.config.from_object('app.config.Config')
+    db.init_app(app)
 
-    @app.route("/")
-    def home():
-        return "Goed gedaan, Ward. Dit is Flask!"
+    # Import and register your routes
+    from . import routes
+    routes.register_routes(app)
+
+    with app.app_context():
+        db.create_all()
 
     return app
+

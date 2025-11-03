@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registreren</title>
+</head>
+<body>
+    <h1>Registreren</h1>
+    <form method="POST" action="{{ url_for('register') }}">
+        <label>Naam: <input type="text" name="naam" required></label><br>
+        <label>Email: <input type="email" name="email" required></label><br>
+        <label>Telefoon: <input type="text" name="telefoon"></label><br>
+        <label>Universiteit: <input type="text" name="universiteit"></label><br>
+        <button type="submit">Registreren</button>
+    </form>
+    <a href="{{ url_for('login') }}">Heb je al een account? Login hier.</a>
+</body>
+</html>

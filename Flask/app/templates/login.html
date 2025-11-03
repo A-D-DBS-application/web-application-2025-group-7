@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h1>Inloggen</h1>
+    <form method="POST" action="{{ url_for('login') }}">
+        <label>Naam: <input type="text" name="naam" required></label>
+        <button type="submit">Login</button>
+    </form>
+    <a href="{{ url_for('register') }}">Nog geen account? Registreer hier.</a>
+</body>
+</html>
