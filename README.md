@@ -1,5 +1,7 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/DxqGQVx4)
 
+
+
 -- Tabellen voor PostgreSQL
 
 1) CREATE TABLE public.beschikbaarheid (
@@ -47,7 +49,6 @@
   egw_kosten numeric,
   goedgekeurd boolean,
   student_id integer,
-  kotbaas_id integer,
   created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT kot_pkey PRIMARY KEY (kot_id),
   CONSTRAINT kot_student_id_fkey FOREIGN KEY (student_id) REFERENCES public.student(student_id)
