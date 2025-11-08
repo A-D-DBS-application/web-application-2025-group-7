@@ -1,50 +1,71 @@
 from . import db
 
+class Gebruiker(db.Model):
+    __tablename__ = 'gebruiker'
+    gebruiker_id = db.Column(db.Integer, primary_key=True)
+    naam = db.Column(db.String, nullable=False)
+    email = db.Column(db.String, nullable=False, unique=True)
+    telefoon = db.Column(db.String)
+    type = db.Column(db.String)  # 'student', 'huurder', 'kotbaas'
+    aangemaakt_op = db.Column(db.DateTime)
+
+    # Relationships
+    student = db.relationship('Student', backref='gebruiker', uselist=False)
+    huurder = db.relationship('Huurder', backref='gebruiker', uselist=False)
+    # bookings and koten handled separately
+
 class Student(db.Model):
     __tablename__ = 'student'
-    student_id = db.Column(db.Integer, primary_key=True)
-    naam = db.Column(db.String)
-    email = db.Column(db.String, unique=True, nullable=False)
-    telefoon = db.Column(db.String)
+    gebruiker_id = db.Column(db.Integer, db.ForeignKey('gebruiker.gebruiker_id'), primary_key=True)
     universiteit = db.Column(db.String)
+    initiatiefnemer = db.Column(db.Boolean, default=False)
+
+    # One student can have many koten
+    koten = db.relationship('Kot', backref='student', lazy=True)
+
+class Huurder(db.Model):
+    __tablename__ = 'huurder'
+    gebruiker_id = db.Column(db.Integer, db.ForeignKey('gebruiker.gebruiker_id'), primary_key=True)
+    voorkeuren = db.Column(db.Text, default="")
+    gesproken_taal = db.Column(db.String)
+
+    # One huurder can have many bookings
+    boekingen = db.relationship('Boeking', backref='huurder', lazy=True)
 
 class Kot(db.Model):
     __tablename__ = 'kot'
     kot_id = db.Column(db.Integer, primary_key=True)
-    adres = db.Column(db.String)
-    stad = db.Column(db.String)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.gebruiker_id'))
+    adres = db.Column(db.String, nullable=False)
+    stad = db.Column(db.String, nullable=False)
     oppervlakte = db.Column(db.Integer)
     aantal_slaapplaatsen = db.Column(db.Integer)
-    prijs_per_nacht = db.Column(db.Numeric)
-    eigen_keuken = db.Column(db.Boolean)
-    eigen_sanitair = db.Column(db.Boolean)
-    egw_kosten = db.Column(db.Numeric)
-    goedgekeurd = db.Column(db.Boolean)
-    student_id = db.Column(db.Integer, db.ForeignKey('student.student_id'))
-    student = db.relationship('Student', backref='koten')
+    maandhuurprijs = db.Column(db.Float, nullable=False)
+    brandveiligheidsconformiteit = db.Column(db.Boolean, default=True)
+    eigen_keuken = db.Column(db.Boolean, default=False)
+    eigen_sanitair = db.Column(db.Boolean, default=False)
+    egwkosten = db.Column(db.Float)
+    goedgekeurd = db.Column(db.Boolean, default=False)
+    foto = db.Column(db.Text)
 
-class Huurder(db.Model):
-    __tablename__ = 'huurder'
-    huurder_id = db.Column(db.Integer, primary_key=True)
-    naam = db.Column(db.String)
-    email = db.Column(db.String, unique=True, nullable=False)
-    telefoon = db.Column(db.String)
+    # Relationships
+    beschikbaarheden = db.relationship('Beschikbaarheid', backref='kot', lazy=True)
+    boekingen = db.relationship('Boeking', backref='kot', lazy=True)
 
 class Beschikbaarheid(db.Model):
     __tablename__ = 'beschikbaarheid'
     beschikbaarheid_id = db.Column(db.Integer, primary_key=True)
     kot_id = db.Column(db.Integer, db.ForeignKey('kot.kot_id'))
-    start_datum = db.Column(db.Date)
-    eind_datum = db.Column(db.Date)
-    kot = db.relationship('Kot', backref='beschikbaarheden')
+    startdatum = db.Column(db.DateTime, nullable=False)
+    einddatum = db.Column(db.DateTime, nullable=False)
+    status_beschikbaarheid = db.Column(db.String)  # use enum in production for values
 
 class Boeking(db.Model):
     __tablename__ = 'boeking'
     boeking_id = db.Column(db.Integer, primary_key=True)
+    gebruiker_id = db.Column(db.Integer, db.ForeignKey('huurder.gebruiker_id'))
     kot_id = db.Column(db.Integer, db.ForeignKey('kot.kot_id'))
-    huurder_id = db.Column(db.Integer, db.ForeignKey('huurder.huurder_id'))
-    start_datum = db.Column(db.Date)
-    eind_datum = db.Column(db.Date)
-    totaal_prijs = db.Column(db.Numeric)
-    kot = db.relationship('Kot', backref='boekingen')
-    huurder = db.relationship('Huurder', backref='boekingen')
+    startdatum = db.Column(db.DateTime, nullable=False)
+    einddatum = db.Column(db.DateTime, nullable=False)
+    totaalprijs = db.Column(db.Numeric)
+    status_boeking = db.Column(db.String)
