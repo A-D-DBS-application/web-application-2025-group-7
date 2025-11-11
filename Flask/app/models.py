@@ -2,7 +2,7 @@ from . import db
 
 class Gebruiker(db.Model):
     __tablename__ = 'gebruiker'
-    gebruiker_id = db.Column(db.Integer, primary_key=True)
+    gebruiker_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     naam = db.Column(db.String, nullable=False)
     email = db.Column(db.String, nullable=False, unique=True)
     telefoon = db.Column(db.String)
@@ -34,7 +34,7 @@ class Huurder(db.Model):
 
 class Kot(db.Model):
     __tablename__ = 'kot'
-    kot_id = db.Column(db.Integer, primary_key=True)
+    kot_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.gebruiker_id'))
     adres = db.Column(db.String, nullable=False)
     stad = db.Column(db.String, nullable=False)

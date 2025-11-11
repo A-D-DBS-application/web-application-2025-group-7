@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+    <title>Voeg kot toe</title>
+</head>
+<body>
+    <h1>Voeg een kot toe</h1>
+    <form method="POST">
+        <label>Adres: <input type="text" name="adres" required></label><br>
+        <label>Stad: <input type="text" name="stad" required></label><br>
+        <label>Oppervlakte (m²): <input type="number" name="oppervlakte" required></label><br>
+        <label>Slaapplaatsen: <input type="number" name="aantal_slaapplaatsen" required></label><br>
+        <label>Maandhuurprijs: <input type="number" name="maandhuurprijs" required></label><br>
+        <label>EGW-kosten: <input type="number" name="egwkosten"></label><br>
+        <label>Eigen keuken: <input type="checkbox" name="eigen_keuken"></label><br>
+        <label>Eigen sanitair: <input type="checkbox" name="eigen_sanitair"></label><br>
+        <button type="submit">Toevoegen</button>
+    </form>
+    <a href="{{ url_for('dashboard') }}">Terug</a>
+</body>
+</html>

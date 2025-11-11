@@ -1,0 +1,49 @@
+<!-- Voeg rol-switcher toe -->
+{% if rollen|length > 1 %}
+<form method="post">
+    <label>Wissel dashboard:
+        <select name="switch_rol" onchange="this.form.submit();">
+            {% for rolnaam in rollen %}
+                <option value="{{ rolnaam }}" {% if actieve_rol == rolnaam %}selected{% endif %}>
+                    {{ rolnaam.title() }}
+                </option>
+            {% endfor %}
+        </select>
+    </label>
+</form>
+{% endif %}
+
+<!doctype html>
+<html>
+<head>
+    <title>Student Dashboard</title>
+</head>
+<body>
+    <h1>Welkom terug, {{naam}}!</h1>
+
+    <h2>Mijn koten</h2>
+    <ul>
+        {% for kot in koten %}
+            <li>
+                {{ kot.adres }}, {{ kot.stad }}, €{{ kot.maandhuurprijs }}/maand
+                (Slaapplaatsen: {{ kot.aantal_slaapplaatsen }})
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('add_kot') }}">Voeg een kot toe</a>
+
+    <h2>Inbox (Nieuwe Boekingen)</h2>
+    <ul>
+        {% for boeking in inbox %}
+            <li>
+                Kot: {{ boeking.kot.adres }}, Gehuurd door gebruiker ID: {{ boeking.huurder.gebruiker_id }},
+                Status: {{ boeking.status_boeking }}
+            </li>
+        {% else %}
+            <li>Geen nieuwe boekingen.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{{ url_for('logout') }}">Uitloggen</a>
+</body>
+</html>

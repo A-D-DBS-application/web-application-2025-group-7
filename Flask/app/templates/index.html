@@ -1,33 +1,74 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
-    <title>Kot Platform Home</title>
+    <title>Home / Koten Zoeken</title>
 </head>
 <body>
-    <h1>Welkom op het Kot Platform</h1>
-    <form method="GET" action="/">
-        <label>Stad: <input type="text" name="stad"></label>
-        <label>Prijs max: <input type="number" name="prijs_max"></label>
-        <label>Slaapplaatsen: <input type="number" name="aantal_slaapplaatsen"></label>
-        <label>Eigen keuken: <input type="checkbox" name="eigen_keuken"></label>
-        <label>Eigen sanitair: <input type="checkbox" name="eigen_sanitair"></label>
-        <button type="submit">Zoeken</button>
+    <h1>Overzicht beschikbare koten</h1>
+    <form method="get">
+        <input type="text" name="stad" placeholder="Stad" value="{{ filters.stad }}">
+        <input type="number" name="max_huur" placeholder="Max prijs per maand" value="{{ filters.max_huur }}">
+        <input type="number" name="min_oppervlakte" placeholder="Min. oppervlakte m²" value="{{ filters.min_oppervlakte }}">
+        <input type="number" name="aantal_slaapplaatsen" placeholder="Min. slaapplaatsen" value="{{ filters.aantal_slaapplaatsen }}">
+        <input type="number" step="0.01" name="max_egwkosten" placeholder="Max EGW-kosten" value="{{ filters.max_egwkosten }}">
+        <label>
+            <input type="checkbox" name="brandveiligheidsconformiteit" value="1" {% if filters.brandveiligheidsconformiteit == '1' %}checked{% endif %}>
+            Brandveilig conform
+        </label>
+        <label>
+            <input type="checkbox" name="eigen_keuken" value="1" {% if filters.eigen_keuken == '1' %}checked{% endif %}>
+            Eigen keuken
+        </label>
+        <label>
+            <input type="checkbox" name="eigen_sanitair" value="1" {% if filters.eigen_sanitair == '1' %}checked{% endif %}>
+            Eigen sanitair
+        </label>
+        <button type="submit">Filter toepassen</button>
+        <a href="{{ url_for('index') }}">Filters wissen</a>
     </form>
-    <h2>Beschikbare koten</h2>
+
+    <h2>Actieve filters:</h2>
     <ul>
-    {% for kot in koten %}
-        <li>
-            {{ kot.adres }} in {{ kot.stad }},
-            €{{ kot.prijs_per_nacht }} / nacht,
-            {{ kot.aantal_slaapplaatsen }} slaapplaatsen,
-            Eigen keuken: {{ 'ja' if kot.eigen_keuken else 'nee' }},
-            Eigen sanitair: {{ 'ja' if kot.eigen_sanitair else 'nee' }}
-        </li>
-    {% else %}
-        <li>Geen koten gevonden.</li>
-    {% endfor %}
+        {% set actieve = [] %}
+        {% for fkey, fval in filters.items() if fval %}
+            {% set _ = actieve.append(1) %}
+            <li>
+                {{ fkey|replace('_', ' ') }}: {{ fval }}
+                <form method="get" style="display:inline">
+                    {% for other_key, other_val in filters.items() if other_key != fkey and other_val %}
+                        <input type="hidden" name="{{ other_key }}" value="{{ other_val }}">
+                    {% endfor %}
+                    <button type="submit" style="background:none;border:none;color:blue;text-decoration:underline;cursor:pointer;">verwijder</button>
+                </form>
+            </li>
+        {% endfor %}
+        {% if not actieve %}
+            <li>Geen actieve filters</li>
+        {% endif %}
     </ul>
-    <a href="{{ url_for('login') }}">Inloggen</a> |
-    <a href="{{ url_for('register') }}">Registreren</a>
+
+
+    {% if koten %}
+        <ul>
+        {% for kot in koten %}
+            <li>
+                {{ kot.adres }}, {{ kot.stad }}<br>
+                Oppervlakte: {{ kot.oppervlakte }} m²<br>
+                Slaapplaatsen: {{ kot.aantal_slaapplaatsen }}<br>
+                Prijs: €{{ kot.maandhuurprijs }}/maand, EGW: €{{ kot.egwkosten }}<br>
+                Brandveilig: {{ 'ja' if kot.brandveiligheidsconformiteit else 'nee' }},
+                Eigen keuken: {{ 'ja' if kot.eigen_keuken else 'nee' }},
+                Eigen sanitair: {{ 'ja' if kot.eigen_sanitair else 'nee' }}<br>
+                <a href="{{ url_for('boek', kot_id=kot.kot_id) }}">Nu boeken</a>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p style="color: red;"><strong>Geen koten gevonden die aan uw voorwaarden voldoen.</strong></p>
+    {% endif %}
+
+    <a href="{{ url_for('login') }}">Login</a> /
+    <a href="{{ url_for('register') }}">Registreer</a>
 </body>
 </html>
+

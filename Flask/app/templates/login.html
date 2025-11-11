@@ -1,14 +1,28 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-    <title>Login</title>
-</head>
+<head><title>Login</title></head>
 <body>
     <h1>Inloggen</h1>
-    <form method="POST" action="{{ url_for('login') }}">
-        <label>Naam: <input type="text" name="naam" required></label>
-        <button type="submit">Login</button>
+    <form method="POST">
+        <label>Naam: <input type="text" name="naam" required></label><br>
+        <label>Rol:
+            <select name="rol">
+                <option value="student">Student</option>
+                <option value="huurder">Huurder</option>
+            </select>
+        </label><br>
+        <button type="submit">Inloggen</button>
     </form>
-    <a href="{{ url_for('register') }}">Nog geen account? Registreer hier.</a>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    <a href="{{ url_for('register') }}">Registreer hier</a>
 </body>
 </html>
+

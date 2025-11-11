@@ -1,17 +1,34 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
     <title>Registreren</title>
+    <script>
+    // Toon universiteit-veld alleen als 'student' gekozen is
+    function toggleUni() {
+        var rol = document.getElementById('rol').value;
+        document.getElementById('uni-row').style.display = rol === 'student' ? 'block' : 'none';
+    }
+    </script>
 </head>
-<body>
+<body onload="toggleUni()">
     <h1>Registreren</h1>
-    <form method="POST" action="{{ url_for('register') }}">
+    <form method="POST">
         <label>Naam: <input type="text" name="naam" required></label><br>
         <label>Email: <input type="email" name="email" required></label><br>
-        <label>Telefoon: <input type="text" name="telefoon"></label><br>
-        <label>Universiteit: <input type="text" name="universiteit"></label><br>
+        <label>Telefoon: <input type="text" name="telefoon" required></label><br>
+        <label>Type:
+            <select id="rol" name="rol" onchange="toggleUni()">
+                <option value="student">Student</option>
+                <option value="huurder">Huurder</option>
+            </select>
+        </label><br>
+        <div id="uni-row">
+            <label>Universiteit: <input type="text" name="universiteit"></label><br>
+        </div>
         <button type="submit">Registreren</button>
     </form>
-    <a href="{{ url_for('login') }}">Heb je al een account? Login hier.</a>
+    <a href="{{ url_for('login') }}">Heb je al een account?</a>
 </body>
 </html>
+
+

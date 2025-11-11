@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+<head>
+    <title>Boek kot</title>
+</head>
+<body>
+    <h1>Kot boeken</h1>
+    <h2>{{ kot.adres }}, {{ kot.stad }}</h2>
+    <p>Prijs: €{{ kot.maandhuurprijs }} / maand</p>
+    <form method="POST">
+        <button type="submit">Bevestig boeking</button>
+    </form>
+    <a href="{{ url_for('index') }}">Annuleren</a>
+</body>
+</html>
