@@ -19,18 +19,24 @@
     <title>Huurder Dashboard</title>
 </head>
 <body>
-    <h1>Welkom, Huurder!</h1>
+    <h1>Welkom terug, {{ naam }}!</h1>
+    
+    <form action="{{ url_for('index') }}">
+        <button type="submit">Zoek een kot</button>
+    </form>
 
     <h2>Mijn gehuurde koten</h2>
     <ul>
         {% for boeking in boekingen %}
             <li>
                 Kot: {{ boeking.kot.adres }}, {{ boeking.kot.stad }}<br>
+                Oppervlakte: {{ boeking.kot.oppervlakte }} m²<br>
+                Slaapplaatsen: {{ boeking.kot.aantal_slaapplaatsen }}<br>
                 Prijs: €{{ boeking.kot.maandhuurprijs }}/maand <br>
                 Status: {{ boeking.status_boeking }}
             </li>
         {% else %}
-            <li>Je hebt nog geen kamer geboekt.</li>
+            <li>Je hebt nog geen kot geboekt.</li>
         {% endfor %}
     </ul>
 

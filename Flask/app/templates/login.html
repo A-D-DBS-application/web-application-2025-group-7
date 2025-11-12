@@ -4,7 +4,9 @@
 <body>
     <h1>Inloggen</h1>
     <form method="POST">
-        <label>Naam: <input type="text" name="naam" required></label><br>
+        <label>Email: <input type="email" name="email"></label><br>
+        <span style="font-size: small; color: #888;">(Of gebruik naam als je geen e-mail hebt)</span><br>
+        <label>Naam: <input type="text" name="naam"></label><br>
         <label>Rol:
             <select name="rol">
                 <option value="student">Student</option>
@@ -25,4 +27,5 @@
     <a href="{{ url_for('register') }}">Registreer hier</a>
 </body>
 </html>
+
 

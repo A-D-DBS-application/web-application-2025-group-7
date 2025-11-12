@@ -98,19 +98,32 @@ def register_routes(app):
                 return redirect(url_for('dashboard'))
         return render_template('register.html')
 
-
     @app.route('/login', methods=['GET', 'POST'])
     def login():
         if request.method == 'POST':
-            naam = request.form['naam']
+            naam = request.form['naam'].strip()
+            email = request.form.get('email', '').strip()  # optioneel veld
             rol = request.form['rol']
-            gebruiker = Gebruiker.query.filter_by(naam=naam, type=rol).first()
+
+            gebruiker = None
+            if email:
+                gebruiker = Gebruiker.query.filter_by(email=email).first()
+            if not gebruiker and naam:
+                gebruiker = Gebruiker.query.filter_by(naam=naam).first()
+
             if gebruiker:
-                session['gebruiker_id'] = gebruiker.gebruiker_id
-                session['rol'] = rol
-                return redirect(url_for('dashboard'))
+                if rol == 'student' and gebruiker.student:
+                    session['gebruiker_id'] = gebruiker.gebruiker_id
+                    session['rol'] = 'student'
+                    return redirect(url_for('dashboard'))
+                elif rol == 'huurder' and gebruiker.huurder:
+                    session['gebruiker_id'] = gebruiker.gebruiker_id
+                    session['rol'] = 'huurder'
+                    return redirect(url_for('dashboard'))
+                else:
+                    flash('Deze gebruiker heeft deze rol niet. Kies een andere rol of registreer je voor deze.')
             else:
-                flash('Gebruiker niet gevonden!')
+                flash('Gebruiker niet gevonden! Controleer naam/email.')
         return render_template('login.html')
 
     @app.route('/dashboard', methods=['GET', 'POST'])

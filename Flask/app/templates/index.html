@@ -67,8 +67,13 @@
         <p style="color: red;"><strong>Geen koten gevonden die aan uw voorwaarden voldoen.</strong></p>
     {% endif %}
 
-    <a href="{{ url_for('login') }}">Login</a> /
-    <a href="{{ url_for('register') }}">Registreer</a>
+    {% if session['gebruiker_id'] is defined %}
+        <a href="{{ url_for('logout') }}">Uitloggen</a>
+    {% else %}
+        <a href="{{ url_for('login') }}">Login</a> /
+        <a href="{{ url_for('register') }}">Registreer</a>
+    {% endif %}
+
 </body>
 </html>
 
