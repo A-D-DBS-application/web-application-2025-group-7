@@ -1,16 +1,16 @@
-As a	    I want to	                                          So that	                                                Prio
-Student  	Register my kot for subletting	                    Gitoo can rent it out during the summer months	        1
-Gitoo	    Manage bookings in one dashboard	                  I can coordinate cleaning and check-ins efficiently    	2
-Kotbaas	  See an overview of rented koten and rental periods  I know when my property is occupied                    	3
-Toerist	  Browse available koten by date and price	          I can find an affordable and suitable stay            	4
-Student  	Enter my rental price and availability period	      Gitoo knows when and at what rate my kot can be rented	5
+As a	    I want to	                                          So that	                                                  Prio
+Student  	Register my kot for subletting	                    Gitoo can rent it out during the summer months	          1
+Gitoo	    Manage bookings in one dashboard	                  I can coordinate cleaning and check-ins efficiently      	2
+Kotbaas	  See an overview of rented koten and rental periods  I know when my property is occupied                    	  3
+Toerist	  Browse available koten by date and price	          I can find an affordable and suitable stay              	4
+Student  	Enter my rental price and availability period	      Gitoo knows when and at what rate my kot can be rented  	5
 Gitoo  	  Automatically import kot data into Odoo	            Listings are ready for publication on Airbnb and Booking.com	6
-Toerist	  Book safely via Airbnb or Booking.com	              I’m assured of a secure and confirmed reservation       7
-Kotbaas	  Digitally approve contracts	                        I have formal confirmation of the rental terms	        8
-Student	  Digitally sign my contract	                        I can complete the process quickly without paperwork	  9
-Gitoo  	  Add photos and descriptions to listings	            Each kot looks attractive and informative online	      10
-Student	  View my earnings overview	                          I know how much I earned and received back            	11
-Kotbaas	  Receive automatic notifications of bookings        	I stay informed when tourists stay in my property	      12
-Toerist  	Read and write reviews	                            I can make informed decisions and share my experience	13
-Gitoo	    Collect tourist feedback	                          I can improve the quality of stays	                    14
+Toerist	  Book safely via Airbnb or Booking.com	              I’m assured of a secure and confirmed reservation         7
+Kotbaas	  Digitally approve contracts	                        I have formal confirmation of the rental terms	          8
+Student	  Digitally sign my contract	                        I can complete the process quickly without paperwork	    9
+Gitoo  	  Add photos and descriptions to listings	            Each kot looks attractive and informative online	        10
+Student	  View my earnings overview	                          I know how much I earned and received back              	11
+Kotbaas	  Receive automatic notifications of bookings        	I stay informed when tourists stay in my property	        12
+Toerist  	Read and write reviews	                            I can make informed decisions and share my experience    	13
+Gitoo	    Collect tourist feedback	                          I can improve the quality of stays	                      14
 
