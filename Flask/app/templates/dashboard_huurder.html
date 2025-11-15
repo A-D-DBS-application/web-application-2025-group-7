@@ -33,7 +33,9 @@
                 Oppervlakte: {{ boeking.kot.oppervlakte }} m²<br>
                 Slaapplaatsen: {{ boeking.kot.aantal_slaapplaatsen }}<br>
                 Prijs: €{{ boeking.kot.maandhuurprijs }}/maand <br>
-                Status: {{ boeking.status_boeking }}
+                Status: {{ boeking.status_boeking }}<br>
+                Startdatum: {{ boeking.startdatum.strftime('%d-%m-%Y') }}<br>
+                Einddatum: {{ boeking.einddatum.strftime('%d-%m-%Y') }}
             </li>
         {% else %}
             <li>Je hebt nog geen kot geboekt.</li>
