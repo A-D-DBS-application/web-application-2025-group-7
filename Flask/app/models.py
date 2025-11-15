@@ -53,12 +53,13 @@ class Kot(db.Model):
     boekingen = db.relationship('Boeking', backref='kot', lazy=True)
 
 class Beschikbaarheid(db.Model):
-    __tablename__ = 'beschikbaarheid'
-    beschikbaarheid_id = db.Column(db.Integer, primary_key=True)
-    kot_id = db.Column(db.Integer, db.ForeignKey('kot.kot_id'))
-    startdatum = db.Column(db.DateTime, nullable=False)
-    einddatum = db.Column(db.DateTime, nullable=False)
-    status_beschikbaarheid = db.Column(db.String)  # use enum in production for values
+    __tablename__ = "beschikbaarheid"
+
+    beschikbaarheid_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    kot_id = db.Column(db.Integer, db.ForeignKey('kot.kot_id'), nullable=False)
+    startdatum = db.Column(db.Date, nullable=False)
+    einddatum = db.Column(db.Date, nullable=False)
+    status_beschikbaarheid = db.Column(db.String(50), default="beschikbaar")
 
 class Boeking(db.Model):
     __tablename__ = 'boeking'
