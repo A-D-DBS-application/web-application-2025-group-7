@@ -1,3 +1,5 @@
+from operator import and_
+from warnings import filters
 from flask import render_template, request, redirect, url_for, session, flash
 from .models import Beschikbaarheid, db, Gebruiker, Student, Huurder, Kot, Boeking
 from datetime import datetime
@@ -16,6 +18,9 @@ def register_routes(app):
             'eigen_keuken': request.args.get('eigen_keuken'),
             'eigen_sanitair': request.args.get('eigen_sanitair'),
             'max_egwkosten': request.args.get('max_egwkosten', '').strip(),
+            'startdatum': request.args.get('startdatum', '').strip(),
+            'einddatum': request.args.get('einddatum', '').strip(),
+
         }
 
         query = Kot.query
@@ -48,6 +53,22 @@ def register_routes(app):
                 query = query.filter(Kot.egwkosten <= float(filters['max_egwkosten']))
             except ValueError:
                 pass
+    #beschikbaarheid filter
+        from sqlalchemy import and_
+
+        if filters['startdatum'] and filters['einddatum']:
+            try:
+                 start = datetime.strptime(filters['startdatum'], "%Y-%m-%d")
+                 end = datetime.strptime(filters['einddatum'], "%Y-%m-%d")
+
+                 query = query.join(Beschikbaarheid).filter(
+                      and_(
+                          Beschikbaarheid.startdatum <= start,
+                         Beschikbaarheid.einddatum >= end
+                      )
+                )
+             except ValueError:
+                 pass
 
         koten = query.all()
         return render_template('index.html', koten=koten, filters=filters)

@@ -11,6 +11,13 @@
         <input type="number" name="min_oppervlakte" placeholder="Min. oppervlakte m²" value="{{ filters.min_oppervlakte }}">
         <input type="number" name="aantal_slaapplaatsen" placeholder="Min. slaapplaatsen" value="{{ filters.aantal_slaapplaatsen }}">
         <input type="number" step="0.01" name="max_egwkosten" placeholder="Max EGW-kosten" value="{{ filters.max_egwkosten }}">
+
+        <label>Startdatum</label>
+        <input type="date" name="startdatum" value="{{ filters.startdatum }}">
+
+        <label>Einddatum</label>
+        <input type="date" name="einddatum" value="{{ filters.einddatum }}">
+        
         <label>
             <input type="checkbox" name="brandveiligheidsconformiteit" value="1" {% if filters.brandveiligheidsconformiteit == '1' %}checked{% endif %}>
             Brandveilig conform
