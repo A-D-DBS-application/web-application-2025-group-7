@@ -14,6 +14,8 @@
         <label>EGW-kosten: <input type="number" name="egwkosten"></label><br>
         <label>Eigen keuken: <input type="checkbox" name="eigen_keuken"></label><br>
         <label>Eigen sanitair: <input type="checkbox" name="eigen_sanitair"></label><br>
+        <label>Startdatum beschikbaarheid: <input type="date" name="startdatum" required></label><br>
+        <label>Einddatum beschikbaarheid: <input type="date" name="einddatum" required></label><br>
         <button type="submit">Toevoegen</button>
     </form>
     <a href="{{ url_for('dashboard') }}">Terug</a>

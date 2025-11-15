@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, session, flash
-from .models import db, Gebruiker, Student, Huurder, Kot, Boeking
+from .models import Beschikbaarheid, db, Gebruiker, Student, Huurder, Kot, Boeking
 from datetime import datetime
 
 def register_routes(app):
@@ -174,7 +174,33 @@ def register_routes(app):
     def add_kot():
         if 'gebruiker_id' not in session or session.get('rol') != 'student':
             return redirect(url_for('login'))
+        student = Student.query.filter_by(gebruiker_id=session['gebruiker_id']).first()
+        if not student:
+            flash("Alleen studenten kunnen koten toevoegen.")
+            return redirect(url_for('dashboard'))
         if request.method == 'POST':
+            #kotgegevens ophalen
+            adres = request.form['adres']
+            stad = request.form['stad']
+            oppervlakte = int(request.form['oppervlakte'])
+            aantal_slaapplaatsen = int(request.form['aantal_slaapplaatsen'])
+            maandhuurprijs = float(request.form['maandhuurprijs'])
+            egwkosten = float(request.form.get('egwkosten', 0))
+            eigen_keuken = bool(request.form.get('eigen_keuken'))
+            eigen_sanitair = bool(request.form.get('eigen_sanitair'))
+
+            #start en einddatum
+            startdatum_str = request.form['startdatum']
+            einddatum_str = request.form['einddatum']
+
+            startdatum = datetime.strptime(startdatum_str, "%Y-%m-%d")
+            einddatum = datetime.strptime(einddatum_str, "%Y-%m-%d")
+
+            if einddatum <= startdatum:
+                flash("Einddatum moet later zijn dan startdatum")
+                return redirect(url_for('add_kot'))
+        
+            #nieuw kot aanmaken 
             kot = Kot(
                 student_id=session['gebruiker_id'],
                 adres=request.form['adres'],
@@ -190,6 +216,17 @@ def register_routes(app):
             )
             db.session.add(kot)
             db.session.commit()
+            #beschikbaarheid koppelen aan kot
+            beschikbaarheid = Beschikbaarheid(
+                kot_id=kot.kot_id,
+                startdatum=startdatum,
+                einddatum=einddatum,
+                status_beschikbaarheid="beschikbaar"
+            )
+            db.session.add(beschikbaarheid)
+            db.session.commit()
+
+            flash("Kot succesvol toegevoegd met beschikbaarheidsperiode!")
             return redirect(url_for('dashboard'))
         return render_template('add_kot.html')
 
@@ -216,3 +253,4 @@ def register_routes(app):
     def logout():
         session.clear()
         return redirect(url_for('index'))
+
