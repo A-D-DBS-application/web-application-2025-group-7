@@ -67,7 +67,7 @@ def register_routes(app):
                          Beschikbaarheid.einddatum >= end
                       )
                 )
-             except ValueError:
+            except ValueError:
                  pass
 
         koten = query.all()
@@ -218,7 +218,7 @@ def register_routes(app):
             einddatum = datetime.strptime(einddatum_str, "%Y-%m-%d")
 
             if einddatum <= startdatum:
-                flash("Einddatum moet later zijn dan startdatum")
+                flash("Einddatum moet later zijn dan startdatum.", "error")
                 return redirect(url_for('add_kot'))
         
             #nieuw kot aanmaken 
