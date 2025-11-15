@@ -69,8 +69,11 @@ def register_routes(app):
                 )
             except ValueError:
                  pass
-        koten = query.all()
+        from sqlalchemy.orm import joinedload
+
+        koten = query.options(joinedload(Kot.beschikbaarheden)).all()
         return render_template('index.html', koten=koten, filters=filters)
+
 
 
 
