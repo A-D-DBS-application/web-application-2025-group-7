@@ -66,6 +66,13 @@
                 Brandveilig: {{ 'ja' if kot.brandveiligheidsconformiteit else 'nee' }},
                 Eigen keuken: {{ 'ja' if kot.eigen_keuken else 'nee' }},
                 Eigen sanitair: {{ 'ja' if kot.eigen_sanitair else 'nee' }}<br>
+                
+                 {% if kot.beschikbaarheid and kot.beschikbaarheid|length > 0 %}
+                     Startdatum: {{ kot.beschikbaarheid[0].startdatum.strftime("%d-%m-%Y") }}<br>
+                     Einddatum: {{ kot.beschikbaarheid[0].einddatum.strftime("%d-%m-%Y") }}<br>
+                {% else %}
+                     <em>Geen beschikbaarheidsinformatie</em><br>
+                {% endif %}
                 <a href="{{ url_for('boek', kot_id=kot.kot_id) }}">Nu boeken</a>
             </li>
         {% endfor %}
