@@ -69,9 +69,10 @@ def register_routes(app):
                 )
             except ValueError:
                  pass
-
         koten = query.all()
         return render_template('index.html', koten=koten, filters=filters)
+
+
 
     @app.route('/register', methods=['GET', 'POST'])
     def register():
