@@ -1,22 +1,7 @@
-<!-- Voeg rol-switcher toe -->
-{% if rollen|length > 1 %}
-<form method="post">
-    <label>Wissel dashboard:
-        <select name="switch_rol" onchange="this.form.submit();">
-            {% for rolnaam in rollen %}
-                <option value="{{ rolnaam }}" {% if actieve_rol == rolnaam %}selected{% endif %}>
-                    {{ rolnaam.title() }}
-                </option>
-            {% endfor %}
-        </select>
-    </label>
-</form>
-{% endif %}
-
 <!doctype html>
 <html>
 <head>
-    <title>Student Dashboard</title>
+    <title>Kotbaas Dashboard</title>
 </head>
 <body>
     <h1>Welkom terug, {{ naam }}!</h1>
@@ -25,7 +10,7 @@
         <button type="submit">Voeg een kot toe</button>
     </form>
 
-    <h2>Mijn toegevoegde koten</h2>
+    <h2>Mijn verhuurde koten</h2>
     <ul>
         {% for kot in koten %}
             <li>
@@ -33,23 +18,14 @@
                 Oppervlakte: {{ kot.oppervlakte }} m²<br>
                 Slaapplaatsen: {{ kot.aantal_slaapplaatsen }}<br>
                 Prijs: €{{ kot.maandhuurprijs }}/maand<br>
-                Kotbaas: {{ kot.kotbaas.gebruiker.naam if kot.kotbaas else "n.v.t." }}<br>
+                Student: {{ kot.student.gebruiker.naam if kot.student else "n.v.t." }}<br>
                 Initiatiefnemer: {{ kot.initiatiefnemer }}<br>
                 <form action="{{ url_for('verwijder_kot', kot_id=kot.kot_id) }}" method="post" style="display:inline;">
                     <button type="submit" onclick="return confirm('Weet je zeker dat je dit kot wilt verwijderen?');">Verwijder</button>
                 </form>
             </li>
         {% else %}
-            <li>Je hebt nog geen koten toegevoegd.</li>
-        {% endfor %}
-    </ul>
-
-    <h2>Inbox</h2>
-    <ul>
-        {% for boeking in inbox %}
-            <li>Kot: {{ boeking.kot.adres }}, Van: {{ boeking.startdatum }}, Tot: {{ boeking.einddatum }}, Status: {{ boeking.status_boeking }}</li>
-        {% else %}
-            <li>Geen boekingen ontvangen.</li>
+            <li>Je verhuurt nog geen koten.</li>
         {% endfor %}
     </ul>
 

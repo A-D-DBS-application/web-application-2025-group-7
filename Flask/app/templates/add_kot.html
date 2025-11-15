@@ -27,6 +27,15 @@
         <label>Eigen sanitair: <input type="checkbox" name="eigen_sanitair"></label><br>
         <label>Startdatum beschikbaarheid: <input type="date" name="startdatum" required></label><br>
         <label>Einddatum beschikbaarheid: <input type="date" name="einddatum" required></label><br>
+        {% if rol == 'student' %}
+            <label>Kotbaas naam: <input type="text" name="kotbaas_naam" required></label><br>
+        {% elif rol == 'kotbaas' %}
+            <label>Student naam: <input type="text" name="student_naam" required></label><br>
+        {% endif %}
+        <label>
+            <input type="checkbox" name="initiatiefnemer" value="1">
+            Ik ben initiatiefnemer van dit kot
+        </label><br>
         <button type="submit">Toevoegen</button>
     </form>
     <a href="{{ url_for('dashboard') }}">Terug</a>

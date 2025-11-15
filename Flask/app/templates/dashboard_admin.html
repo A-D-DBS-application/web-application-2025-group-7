@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+    <title>Gitoo Admin Dashboard</title>
+</head>
+<body>
+    <h1>Gitoo Admin: Overzicht boekingen</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Huurder</th>
+                <th>Kot</th>
+                <th>Status</th>
+                <th>Periode</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for boeking in boekingen %}
+                <tr>
+                    <td>{{ boeking.huurder.gebruiker.naam if boeking.huurder else 'n.v.t.' }}</td>
+                    <td>
+                        {{ boeking.kot.adres if boeking.kot else 'n.v.t.' }},
+                        {{ boeking.kot.stad if boeking.kot else '' }}
+                    </td>
+                    <td>{{ boeking.status_boeking }}</td>
+                    <td>{{ boeking.startdatum.strftime('%Y-%m-%d') }} t.e.m. {{ boeking.einddatum.strftime('%Y-%m-%d') }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="4">Geen boekingen gevonden.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('logout') }}">Uitloggen</a>
+</body>
+</html>
