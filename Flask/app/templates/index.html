@@ -7,10 +7,10 @@
     <h1>Overzicht beschikbare koten</h1>
     <form method="get">
         <input type="text" name="stad" placeholder="Stad" value="{{ filters.stad }}">
-        <input type="number" name="max_huur" placeholder="Max prijs per maand" value="{{ filters.max_huur }}">
-        <input type="number" name="min_oppervlakte" placeholder="Min. oppervlakte m²" value="{{ filters.min_oppervlakte }}">
-        <input type="number" name="aantal_slaapplaatsen" placeholder="Min. slaapplaatsen" value="{{ filters.aantal_slaapplaatsen }}">
-        <input type="number" step="0.01" name="max_egwkosten" placeholder="Max EGW-kosten" value="{{ filters.max_egwkosten }}">
+        <input type="number" name="max_huur" placeholder="Max prijs per maand" value="{{ filters.max_huur }}" min="0">
+        <input type="number" name="min_oppervlakte" placeholder="Min. oppervlakte m²" value="{{ filters.min_oppervlakte }}" min="0">
+        <input type="number" name="aantal_slaapplaatsen" placeholder="Min. slaapplaatsen" value="{{ filters.aantal_slaapplaatsen }}" min="0">
+        <input type="number" step="0.01" name="max_egwkosten" placeholder="Max EGW-kosten" value="{{ filters.max_egwkosten }}" min="0">
 
         <label>Startdatum</label>
         <input type="date" name="startdatum" value="{{ filters.startdatum }}">

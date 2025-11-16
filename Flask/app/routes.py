@@ -28,17 +28,23 @@ def register_routes(app):
             query = query.filter(Kot.stad.ilike(f"%{filters['stad']}%"))
         if filters['max_huur']:
             try:
-                query = query.filter(Kot.maandhuurprijs <= float(filters['max_huur']))
+                waarde = float(filters['max_huur'])
+                if waarde >= 0:
+                    query = query.filter(Kot.maandhuurprijs <= waarde)
             except ValueError:
                 pass
         if filters['min_oppervlakte']:
             try:
-                query = query.filter(Kot.oppervlakte >= int(filters['min_oppervlakte']))
+                waarde = int(filters['min_oppervlakte'])
+                if waarde >= 0:
+                    query = query.filter(Kot.oppervlakte >= waarde)
             except ValueError:
                 pass
         if filters['aantal_slaapplaatsen']:
             try:
-                query = query.filter(Kot.aantal_slaapplaatsen >= int(filters['aantal_slaapplaatsen']))
+                waarde = int(filters['aantal_slaapplaatsen'])
+                if waarde >= 0:
+                    query = query.filter(Kot.aantal_slaapplaatsen >= waarde)
             except ValueError:
                 pass
         if filters['brandveiligheidsconformiteit'] == '1':
@@ -49,7 +55,9 @@ def register_routes(app):
             query = query.filter(Kot.eigen_sanitair.is_(True))
         if filters['max_egwkosten']:
             try:
-                query = query.filter(Kot.egwkosten <= float(filters['max_egwkosten']))
+                waarde = float(filters['max_egwkosten'])
+                if waarde >= 0:
+                    query = query.filter(Kot.egwkosten <= waarde)
             except ValueError:
                 pass
 
