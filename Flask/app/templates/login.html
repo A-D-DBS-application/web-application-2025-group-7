@@ -4,18 +4,46 @@
 <body>
     <h1>Inloggen</h1>
     <form method="POST">
+      <label>Rol:
+        <select name="rol">
+          <option value="student">Student</option>
+          <option value="huurder">Huurder</option>
+          <option value="kotbaas">Kotbaas</option>
+          <option value="admin">Admin</option>
+        </select>
+      </label><br>
+
+      <div id="user-fields">
         <label>Email: <input type="email" name="email"></label><br>
         <span style="font-size: small; color: #888;">(Of gebruik naam als je geen e-mail hebt)</span><br>
         <label>Naam: <input type="text" name="naam"></label><br>
-        <label>Rol:
-            <select name="rol">
-                <option value="student">Student</option>
-                <option value="huurder">Huurder</option>
-                <option value="kotbaas">Kotbaas</option>
-            </select>
-        </label><br>
-        <button type="submit">Inloggen</button>
+      </div>
+
+      <div id="admin-fields" style="display:none;">
+        <label>Admin gebruiker: <input type="text" name="admin_username"></label><br>
+        <label>Wachtwoord: <input type="password" name="admin_password"></label><br>
+      </div>
+
+      <button type="submit">Inloggen</button>
     </form>
+
+    <script>
+    (function(){
+      function toggleLoginFields(sel){
+        var isAdmin = sel.value === 'admin';
+        var user = document.getElementById('user-fields');
+        var admin = document.getElementById('admin-fields');
+        if(user) user.style.display = isAdmin ? 'none' : 'block';
+        if(admin) admin.style.display = isAdmin ? 'block' : 'none';
+      }
+      document.addEventListener('DOMContentLoaded', function(){
+        var sel = document.querySelector('select[name="rol"]');
+        if(!sel) return;
+        toggleLoginFields(sel);
+        sel.addEventListener('change', function(){ toggleLoginFields(sel); });
+      });
+    })();
+    </script>
     {% with messages = get_flashed_messages() %}
       {% if messages %}
         <ul>

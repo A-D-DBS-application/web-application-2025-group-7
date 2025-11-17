@@ -66,7 +66,29 @@
                 Brandveilig: {{ 'ja' if kot.brandveiligheidsconformiteit else 'nee' }},
                 Eigen keuken: {{ 'ja' if kot.eigen_keuken else 'nee' }},
                 Eigen sanitair: {{ 'ja' if kot.eigen_sanitair else 'nee' }}<br>
+                {% if kot.foto %}
+                    <img src="{{ kot.foto }}" alt="Foto van kot" style="max-width:200px; height:auto; display:block; margin:8px 0;">
+                {% endif %}
+                {% if kot.beschrijving %}
+                    <p>{{ kot.beschrijving }}</p>
+                {% endif %}
                 
+                {% if session.get('rol') == 'admin' %}
+                    <div style="margin:8px 0; padding:8px; border:1px dashed #aaa;">
+                        <strong>Admin acties</strong>
+                        <form method="post" action="{{ url_for('admin_update_description', kot_id=kot.kot_id) }}" style="margin-top:6px;">
+                            <label>Beschrijving toevoegen/bijwerken:</label><br>
+                            <textarea name="beschrijving" rows="3" style="width:100%;">{{ kot.beschrijving or '' }}</textarea>
+                            <button type="submit">Opslaan beschrijving</button>
+                        </form>
+                        <form method="post" action="{{ url_for('admin_update_photo', kot_id=kot.kot_id) }}" style="margin-top:6px;">
+                            <label>Foto-URL toevoegen/bijwerken:</label>
+                            <input type="text" name="foto" value="{{ kot.foto or '' }}" style="width:100%;">
+                            <button type="submit">Opslaan foto</button>
+                        </form>
+                    </div>
+                {% endif %}
+
                 {% if kot.beschikbaarheden %}
                 {% for b in kot.beschikbaarheden %}
                     Startdatum: {{ b.startdatum.strftime('%Y-%m-%d') }}<br>
@@ -83,7 +105,7 @@
         <p style="color: red;"><strong>Geen koten gevonden die aan uw voorwaarden voldoen.</strong></p>
     {% endif %}
 
-    {% if session['gebruiker_id'] is defined %}
+    {% if session['gebruiker_id'] is defined or session.get('rol') == 'admin' %}
         <a href="{{ url_for('logout') }}">Uitloggen</a>
     {% else %}
         <a href="{{ url_for('login') }}">Login</a> /

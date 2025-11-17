@@ -33,6 +33,12 @@
                 Oppervlakte: {{ kot.oppervlakte }} m²<br>
                 Slaapplaatsen: {{ kot.aantal_slaapplaatsen }}<br>
                 Prijs: €{{ kot.maandhuurprijs }}/maand<br>
+                {% if kot.foto %}
+                    <img src="{{ kot.foto }}" alt="Foto van kot" style="max-width:200px; height:auto; display:block; margin:8px 0;">
+                {% endif %}
+                {% if kot.beschrijving %}
+                    <p>{{ kot.beschrijving }}</p>
+                {% endif %}
                 Kotbaas: {{ kot.kotbaas.gebruiker.naam if kot.kotbaas else "n.v.t." }}<br>
                 Initiatiefnemer: {{ kot.initiatiefnemer }}<br>
                 <form action="{{ url_for('verwijder_kot', kot_id=kot.kot_id) }}" method="post" style="display:inline;">

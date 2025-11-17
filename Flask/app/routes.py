@@ -148,9 +148,20 @@ def register_routes(app):
     @app.route('/login', methods=['GET', 'POST'])
     def login():
         if request.method == 'POST':
+            rol = request.form['rol']
+            # Admin login only when 'admin' role is selected
+            if rol == 'admin':
+                admin_username = request.form.get('admin_username', '').strip()
+                admin_password = request.form.get('admin_password', '').strip()
+                if admin_username == 'GitooAdmin' and admin_password == 'Gitoo123':
+                    session['rol'] = 'admin'
+                    return redirect(url_for('index'))
+                else:
+                    flash('Ongeldige admin inloggegevens.')
+                    return render_template('login.html')
+
             naam = request.form['naam'].strip()
             email = request.form.get('email', '').strip()  # optioneel veld
-            rol = request.form['rol']
 
             gebruiker = None
             if email:
@@ -162,7 +173,7 @@ def register_routes(app):
                 if email.endswith('@gitoo.be'):
                     session['gebruiker_id'] = gebruiker.gebruiker_id
                     session['rol'] = 'admin'
-                    return redirect(url_for('dashboard_admin'))
+                    return redirect(url_for('index'))
                 elif rol == 'student' and gebruiker.student:
                     session['gebruiker_id'] = gebruiker.gebruiker_id
                     session['rol'] = 'student'
@@ -246,6 +257,13 @@ def register_routes(app):
             eigen_keuken = bool(request.form.get('eigen_keuken'))
             eigen_sanitair = bool(request.form.get('eigen_sanitair'))
 
+            # Enkel door Gitoo/kotbaas aan te vullen
+            beschrijving = None
+            foto_url = ''
+            if rol in ['kotbaas', 'admin']:
+                beschrijving = request.form.get('beschrijving', '').strip() or None
+                foto_url = request.form.get('foto', '').strip() or ''
+
             startdatum_str = request.form['startdatum']
             einddatum_str = request.form['einddatum']
 
@@ -297,7 +315,8 @@ def register_routes(app):
                 eigen_sanitair=eigen_sanitair,
                 egwkosten=egwkosten,
                 goedgekeurd=False,
-                foto='',
+                beschrijving=beschrijving,
+                foto=foto_url,
                 initiatiefnemer=initiatiefnemer
             )
             db.session.add(kot)
@@ -357,6 +376,30 @@ def register_routes(app):
             # Boekingslogica komt hier indien gewenst
             pass
         return render_template('boek.html', kot=kot)
+
+    # Admin-only: update beschrijving
+    @app.route('/admin/kot/<int:kot_id>/update_description', methods=['POST'])
+    def admin_update_description(kot_id):
+        if session.get('rol') != 'admin':
+            return redirect(url_for('login'))
+        kot = Kot.query.get_or_404(kot_id)
+        nieuwe_beschrijving = request.form.get('beschrijving', '').strip()
+        kot.beschrijving = nieuwe_beschrijving or None
+        db.session.commit()
+        flash('Beschrijving bijgewerkt.', 'success')
+        return redirect(url_for('index'))
+
+    # Admin-only: update foto URL
+    @app.route('/admin/kot/<int:kot_id>/update_photo', methods=['POST'])
+    def admin_update_photo(kot_id):
+        if session.get('rol') != 'admin':
+            return redirect(url_for('login'))
+        kot = Kot.query.get_or_404(kot_id)
+        nieuwe_foto = request.form.get('foto', '').strip()
+        kot.foto = nieuwe_foto or ''
+        db.session.commit()
+        flash('Foto-URL bijgewerkt.', 'success')
+        return redirect(url_for('index'))
 
     @app.route('/logout')
     def logout():

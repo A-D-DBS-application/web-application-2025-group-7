@@ -23,6 +23,12 @@
         <label>Slaapplaatsen: <input type="number" name="aantal_slaapplaatsen" required></label><br>
         <label>Maandhuurprijs: <input type="number" name="maandhuurprijs" required></label><br>
         <label>EGW-kosten: <input type="number" name="egwkosten"></label><br>
+        {% if rol == 'kotbaas' or rol == 'admin' %}
+        <label>Beschrijving:<br>
+            <textarea name="beschrijving" placeholder="Beschrijf het kot"></textarea>
+        </label><br>
+        <label>Foto URL: <input type="text" name="foto" placeholder="URL van foto (optioneel)"></label><br>
+        {% endif %}
         <label>Eigen keuken: <input type="checkbox" name="eigen_keuken"></label><br>
         <label>Eigen sanitair: <input type="checkbox" name="eigen_sanitair"></label><br>
         <label>Startdatum beschikbaarheid: <input type="date" name="startdatum" required></label><br>

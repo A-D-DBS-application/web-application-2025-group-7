@@ -45,6 +45,7 @@ class Kot(db.Model):
     eigen_sanitair = db.Column(db.Boolean, default=False)
     egwkosten = db.Column(db.Float)
     goedgekeurd = db.Column(db.Boolean, default=False)
+    beschrijving = db.Column(db.Text)
     foto = db.Column(db.Text)
 
     # Relationships
