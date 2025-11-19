@@ -1,0 +1,41 @@
+{% extends 'dashboard_admin.html' %}
+{% block dashboard_content %}
+<h2>Alle koten</h2>
+<table border="1">
+    <thead>
+        <tr>
+            <th>Adres</th>
+            <th>Stad</th>
+            <th>Foto</th>
+            <th>Beschrijving</th>
+            <th>Bewerk</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for kot in koten %}
+            <tr>
+                <td>{{ kot.adres }}</td>
+                <td>{{ kot.stad }}</td>
+                <td>
+                    {% if kot.foto %}
+                        <img src="{{ kot.foto }}" width="80">
+                    {% else %}
+                        n.v.t.
+                    {% endif %}
+                </td>
+                <td>{{ kot.beschrijving or 'n.v.t.' }}</td>
+                <td>
+                    <form action="{{ url_for('admin_update_description', kot_id=kot.kot_id) }}" method="post">
+                        <input type="text" name="beschrijving" value="{{ kot.beschrijving or '' }}">
+                        <button type="submit">Beschrijving bijwerken</button>
+                    </form>
+                    <form action="{{ url_for('admin_update_photo', kot_id=kot.kot_id) }}" method="post">
+                        <input type="text" name="foto" value="{{ kot.foto or '' }}">
+                        <button type="submit">Foto bijwerken</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

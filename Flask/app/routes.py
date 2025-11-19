@@ -155,7 +155,7 @@ def register_routes(app):
                 admin_password = request.form.get('admin_password', '').strip()
                 if admin_username == 'GitooAdmin' and admin_password == 'Gitoo123':
                     session['rol'] = 'admin'
-                    return redirect(url_for('index'))
+                    return redirect(url_for('dashboard_admin'))
                 else:
                     flash('Ongeldige admin inloggegevens.')
                     return render_template('login.html')
@@ -420,11 +420,19 @@ def register_routes(app):
             naam=kotbaas.gebruiker.naam,
             koten=koten
         )
-
+    
     @app.route('/dashboard_admin')
     def dashboard_admin():
         if 'rol' not in session or session['rol'] != 'admin':
             return redirect(url_for('login'))
         boekingen = Boeking.query.all()
-        return render_template('dashboard_admin.html', boekingen=boekingen)
+        return render_template('admin_booking_overview.html', boekingen=boekingen)
 
+    @app.route('/dashboard_admin_koten')
+    def dashboard_admin_koten():
+        if 'rol' not in session or session['rol'] != 'admin':
+            return redirect(url_for('login'))
+        koten = Kot.query.all()
+        return render_template('admin_kot_list.html', koten=koten)
+
+    
