@@ -48,7 +48,24 @@
                 </td>
                 <td>{{ boeking.aantal_personen }}</td>
                 <td>{{ boeking.status_boeking }}</td>
-                <td>{{ boeking.startdatum.strftime('%Y-%m-%d') }} t.e.m. {{ boeking.einddatum.strftime('%Y-%m-%d') }}</td>
+                {% set start = boeking.startdatum %}
+                {% set eind = boeking.einddatum %}
+                <td>
+                    {% if start or eind %}
+                        {% set start_str = start.strftime('%Y-%m-%d') if start else 'n.v.t.' %}
+                        {% set eind_str = eind.strftime('%Y-%m-%d') if eind else 'n.v.t.' %}
+                        {{ start_str }} t.e.m. {{ eind_str }}
+                        {% if start and eind %}
+                            {% set dagen = (eind - start).days %}
+                            {% if dagen < 1 %}
+                                {% set dagen = 1 %}
+                            {% endif %}
+                            ({{ dagen }} dagen)
+                        {% endif %}
+                    {% else %}
+                        n.v.t.
+                    {% endif %}
+                </td>
             </tr>
         {% else %}
             <tr><td colspan="7">Geen boekingen gevonden.</td></tr>
