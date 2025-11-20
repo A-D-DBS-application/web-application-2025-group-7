@@ -4,6 +4,10 @@
 <div style="margin-bottom:10px;">
     <a href="{{ url_for('dashboard_admin_koten') }}"><button type="button">Ververs overzicht</button></a>
 </div>
+<p style="font-size:0.9rem; color:#555;">
+    Belgische toeristenbelasting wordt automatisch berekend aan gemiddeld €{{ "%.2f"|format(tourist_tax_rate) }} per persoon per nacht;
+    per stad wordt het tarief afgerond volgens de huidige lokale regelgeving.
+</p>
 <table border="1">
     <thead>
         <tr>
@@ -13,6 +17,10 @@
             <th>Capaciteit</th>
             <th>Foto</th>
             <th>Beschrijving</th>
+            <th>Omzet per nacht</th>
+            <th>Totale omzet</th>
+            <th>Toeristenbelasting</th>
+            <th>Omzet na toeristenbelasting</th>
             <th>Bewerk</th>
         </tr>
     </thead>
@@ -41,6 +49,7 @@
                     {% endif %}
                 </td>
                 <td>{{ kot.aantal_slaapplaatsen or 'n.v.t.' }}</td>
+                {% set stats = kot_statistieken.get(kot.kot_id) if kot_statistieken else None %}
                 <td>
                     {% if kot.foto %}
                         <img src="{{ kot.foto }}" width="80">
@@ -49,6 +58,10 @@
                     {% endif %}
                 </td>
                 <td>{{ kot.beschrijving or 'n.v.t.' }}</td>
+                <td>€ {{ "%.2f"|format(stats.omzet_per_nacht if stats else 0) }}</td>
+                <td>€ {{ "%.2f"|format(stats.totale_omzet if stats else 0) }}</td>
+                <td>€ {{ "%.2f"|format(stats.toeristenbelasting if stats else 0) }}</td>
+                <td>€ {{ "%.2f"|format(stats.omzet_na_belasting if stats else 0) }}</td>
                 <td><a href="{{ url_for('admin_kot_edit', kot_id=kot.kot_id) }}"><button>Bewerk</button></a></td>
             </tr>
         {% endfor %}

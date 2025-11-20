@@ -7,6 +7,64 @@ from sqlalchemy.orm import joinedload
 from .models import Beschikbaarheid, db, Gebruiker, Student, Huurder, Kot, Boeking, Kotbaas
 from datetime import datetime, timedelta
 
+BELGIAN_AVERAGE_TOURIST_TAX_RATES_EUR = {
+    2023: 3.15,
+    2024: 3.30,
+    2025: 3.45,
+}
+
+BELGIAN_CITY_TOURIST_TAX_EUR = {
+    'antwerpen': 2.97,
+    'brugge': 3.00,
+    'brussel': 4.24,
+    'brussels': 4.24,
+    'gent': 3.00,
+    'ghent': 3.00,
+    'hasselt': 2.50,
+    'kortrijk': 2.75,
+    'leuven': 4.25,
+    'mechelen': 3.40,
+    'lier': 2.50,
+    'luik': 2.50,
+    'liege': 2.50,
+}
+
+BELGIAN_REFERENCE_YEAR = 2024
+
+
+def _resolve_belgian_average_rate(year: int):
+    if year in BELGIAN_AVERAGE_TOURIST_TAX_RATES_EUR:
+        return BELGIAN_AVERAGE_TOURIST_TAX_RATES_EUR[year]
+    past_years = sorted(BELGIAN_AVERAGE_TOURIST_TAX_RATES_EUR.keys())
+    for y in reversed(past_years):
+        if year >= y:
+            return BELGIAN_AVERAGE_TOURIST_TAX_RATES_EUR[y]
+    return BELGIAN_AVERAGE_TOURIST_TAX_RATES_EUR[past_years[0]]
+
+
+def get_current_tourist_tax_rate(city: str | None = None):
+    env_rate = os.getenv('TOURIST_TAX_RATE_EUR') or os.getenv('TOERISTENBELASTING_EUR')
+    if env_rate:
+        try:
+            return float(env_rate)
+        except ValueError:
+            pass
+
+    current_year = datetime.now().year
+    average_rate = _resolve_belgian_average_rate(current_year)
+
+    if city:
+        normalized_city = city.strip().lower()
+        base_city_rate = BELGIAN_CITY_TOURIST_TAX_EUR.get(normalized_city)
+        if base_city_rate is not None:
+            reference = BELGIAN_AVERAGE_TOURIST_TAX_RATES_EUR.get(BELGIAN_REFERENCE_YEAR)
+            if reference:
+                ratio = average_rate / reference
+                return round(base_city_rate * ratio, 2)
+            return base_city_rate
+
+    return average_rate
+
 def register_routes(app):
 
     @app.route('/', methods=['GET'])
@@ -555,10 +613,43 @@ def register_routes(app):
         koten = (
             Kot.query.options(
                 joinedload(Kot.kotbaas).joinedload(Kotbaas.gebruiker),
-                joinedload(Kot.student).joinedload(Student.gebruiker)
+                joinedload(Kot.student).joinedload(Student.gebruiker),
+                joinedload(Kot.boekingen)
             ).all()
         )
-        return render_template('admin_kot_list.html', koten=koten)
+        belgian_average_tax = get_current_tourist_tax_rate()
+        kot_statistieken = {}
+
+        for kot in koten:
+            maandhuur = float(kot.maandhuurprijs or 0)
+            omzet_per_nacht = maandhuur / 30 if maandhuur else 0
+            totale_omzet = 0.0
+            toeristenbelasting = 0.0
+            kot_tax_rate = get_current_tourist_tax_rate(kot.stad) if kot.stad else belgian_average_tax
+
+            for boeking in kot.boekingen:
+                totaalprijs = float(boeking.totaalprijs or 0)
+                totale_omzet += totaalprijs
+                start = boeking.startdatum
+                eind = boeking.einddatum
+                if start and eind:
+                    nachten = max((eind - start).days, 1)
+                    personen = boeking.aantal_personen or 1
+                    toeristenbelasting += kot_tax_rate * personen * nachten
+
+            kot_statistieken[kot.kot_id] = {
+                'omzet_per_nacht': omzet_per_nacht,
+                'totale_omzet': totale_omzet,
+                'toeristenbelasting': toeristenbelasting,
+                'omzet_na_belasting': max(totale_omzet - toeristenbelasting, 0.0),
+            }
+
+        return render_template(
+            'admin_kot_list.html',
+            koten=koten,
+            kot_statistieken=kot_statistieken,
+            tourist_tax_rate=belgian_average_tax
+        )
 
     @app.route('/admin/kot/<int:kot_id>/edit', methods=['GET', 'POST'])
     def admin_kot_edit(kot_id):
