@@ -9,6 +9,7 @@
         <tr>
             <th>Adres</th>
             <th>Stad</th>
+            <th>Eigenaar</th>
             <th>Foto</th>
             <th>Beschrijving</th>
             <th>Bewerk</th>
@@ -19,6 +20,25 @@
             <tr>
                 <td>{{ kot.adres }}</td>
                 <td>{{ kot.stad }}</td>
+                <td>
+                    {% set eigenaar = None %}
+                    {% if kot.kotbaas and kot.kotbaas.gebruiker %}
+                        {% set eigenaar = kot.kotbaas.gebruiker.naam %}
+                    {% elif kot.student and kot.student.gebruiker %}
+                        {% set eigenaar = kot.student.gebruiker.naam %}
+                    {% endif %}
+                    {% if eigenaar %}
+                        {% set eigenaar_trimmed = eigenaar.strip() %}
+                        {% if eigenaar_trimmed %}
+                            {% set naamdelen = eigenaar_trimmed.split(' ', 1) %}
+                            {{ naamdelen[0] }}{% if naamdelen|length > 1 %} {{ naamdelen[1] }}{% endif %}
+                        {% else %}
+                            Onbekend
+                        {% endif %}
+                    {% else %}
+                        Onbekend
+                    {% endif %}
+                </td>
                 <td>
                     {% if kot.foto %}
                         <img src="{{ kot.foto }}" width="80">

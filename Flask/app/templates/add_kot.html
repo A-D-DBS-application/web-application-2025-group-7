@@ -34,8 +34,16 @@
         <label>Startdatum beschikbaarheid: <input type="date" name="startdatum" required></label><br>
         <label>Einddatum beschikbaarheid: <input type="date" name="einddatum" required></label><br>
         {% if rol == 'student' %}
-            <label>Kotbaas naam: <input type="text" name="kotbaas_naam" required></label><br>
+            <label>Kotbaas voornaam: <input type="text" name="kotbaas_voornaam" required></label><br>
+            <label>Kotbaas achternaam: <input type="text" name="kotbaas_achternaam" required></label><br>
         {% elif rol == 'kotbaas' %}
+            {% set huidige_naam = gebruiker.naam.strip() if gebruiker and gebruiker.naam else '' %}
+            {% set naamdelen = huidige_naam.split(' ', 1) if huidige_naam else [] %}
+            <fieldset style="max-width:320px;">
+                <legend>Eigenaar</legend>
+                <label>Voornaam: <input type="text" name="eigenaar_voornaam" value="{{ naamdelen[0] if naamdelen|length > 0 else '' }}" required></label><br>
+                <label>Achternaam: <input type="text" name="eigenaar_achternaam" value="{{ naamdelen[1] if naamdelen|length > 1 else '' }}" required></label><br>
+            </fieldset>
             <label>Student naam: <input type="text" name="student_naam" required></label><br>
         {% endif %}
         <label>

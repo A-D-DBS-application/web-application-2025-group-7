@@ -3,6 +3,7 @@ from warnings import filters
 from flask import render_template, request, redirect, url_for, session, flash
 from werkzeug.utils import secure_filename
 import os, time
+from sqlalchemy.orm import joinedload
 from .models import Beschikbaarheid, db, Gebruiker, Student, Huurder, Kot, Boeking, Kotbaas
 from datetime import datetime
 
@@ -77,7 +78,6 @@ def register_routes(app):
             except ValueError:
                 pass
 
-        from sqlalchemy.orm import joinedload
         koten = query.options(joinedload(Kot.beschikbaarheden)).all()
         return render_template('index.html', koten=koten, filters=filters)
 
@@ -247,6 +247,10 @@ def register_routes(app):
         if 'gebruiker_id' not in session or session.get('rol') not in ['student', 'kotbaas']:
             return redirect(url_for('login'))
         rol = session.get('rol')
+        gebruiker = Gebruiker.query.get(session['gebruiker_id'])
+        if not gebruiker:
+            flash('Gebruiker niet gevonden.', 'error')
+            return redirect(url_for('login'))
 
         if request.method == 'POST':
             # Kotgegevens ophalen
@@ -281,20 +285,32 @@ def register_routes(app):
             kotbaas_id = None
 
             if rol == 'student':
-                kotbaas_naam = request.form['kotbaas_naam'].strip()
+                kotbaas_voornaam = request.form.get('kotbaas_voornaam', '').strip()
+                kotbaas_achternaam = request.form.get('kotbaas_achternaam', '').strip()
+                if not kotbaas_voornaam or not kotbaas_achternaam:
+                    flash('Vul zowel voornaam als achternaam van de kotbaas in.', 'error')
+                    return render_template('add_kot.html', rol=rol, gebruiker=gebruiker)
+                kotbaas_naam = f"{kotbaas_voornaam} {kotbaas_achternaam}"
                 kotbaas = Gebruiker.query.filter_by(naam=kotbaas_naam, type='kotbaas').first()
                 if not kotbaas:
                     flash('Naam is fout getypt of kotbaas is nog niet geregistreerd op onze website.', 'error')
-                    return render_template('add_kot.html', rol=rol)
+                    return render_template('add_kot.html', rol=rol, gebruiker=gebruiker)
                 kotbaas_id = kotbaas.gebruiker_id
                 student_id = session['gebruiker_id']
             elif rol == 'kotbaas':
+                eigenaar_voornaam = request.form.get('eigenaar_voornaam', '').strip()
+                eigenaar_achternaam = request.form.get('eigenaar_achternaam', '').strip()
+                if not eigenaar_voornaam or not eigenaar_achternaam:
+                    flash('Vul zowel je voornaam als achternaam in.', 'error')
+                    return render_template('add_kot.html', rol=rol, gebruiker=gebruiker)
+                volledige_eigenaar_naam = f"{eigenaar_voornaam} {eigenaar_achternaam}"
+                gebruiker.naam = volledige_eigenaar_naam
                 student_naam = request.form['student_naam'].strip()
                 student = Gebruiker.query.filter_by(naam=student_naam, type='student').first()
                 if not student:
                     flash('Naam is fout getypt of student is nog niet geregistreerd op onze website.', 'error')
-                    return render_template('add_kot.html', rol=rol)
-                kotbaas_id = session['gebruiker_id']
+                    return render_template('add_kot.html', rol=rol, gebruiker=gebruiker)
+                kotbaas_id = gebruiker.gebruiker_id
                 student_id = student.gebruiker_id
 
             # Initiatiefnemer-logica
@@ -338,7 +354,7 @@ def register_routes(app):
             return redirect(url_for('dashboard'))
 
         # GET: juiste formulier tonen met goede rol
-        return render_template('add_kot.html', rol=session.get('rol'))
+        return render_template('add_kot.html', rol=session.get('rol'), gebruiker=gebruiker)
     
     @app.route('/verwijder_kot/<int:kot_id>', methods=['POST'])
     def verwijder_kot(kot_id):
@@ -460,7 +476,12 @@ def register_routes(app):
     def dashboard_admin_koten():
         if 'rol' not in session or session['rol'] != 'admin':
             return redirect(url_for('login'))
-        koten = Kot.query.all()
+        koten = (
+            Kot.query.options(
+                joinedload(Kot.kotbaas).joinedload(Kotbaas.gebruiker),
+                joinedload(Kot.student).joinedload(Student.gebruiker)
+            ).all()
+        )
         return render_template('admin_kot_list.html', koten=koten)
 
     @app.route('/admin/kot/<int:kot_id>/edit', methods=['GET', 'POST'])
