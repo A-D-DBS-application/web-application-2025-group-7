@@ -83,7 +83,7 @@ def register_routes(app):
             'einddatum': request.args.get('einddatum', '').strip(),
         }
 
-        query = Kot.query
+        query = Kot.query.filter_by(goedgekeurd=True) # Alleen goedgekeurde koten tonen
 
         if filters['stad']:
             query = query.filter(Kot.stad.ilike(f"%{filters['stad']}%"))
@@ -390,10 +390,10 @@ def register_routes(app):
                 eigen_keuken=eigen_keuken,
                 eigen_sanitair=eigen_sanitair,
                 egwkosten=egwkosten,
-                goedgekeurd=False,
+                goedgekeurd=False, # Kot is niet direct zichtbaar
                 beschrijving=beschrijving,
                 foto=foto_url,
-                initiatiefnemer=initiatiefnemer
+                initiatiefnemer=initiatiefnemer,
             )
             db.session.add(kot)
             db.session.commit()
@@ -593,10 +593,12 @@ def register_routes(app):
         kotbaas = Kotbaas.query.get(session['gebruiker_id'])
         # Geeft alle koten waarbij hij kotbaas is
         koten = Kot.query.filter_by(kotbaas_id=kotbaas.gebruiker_id).all()
+        pending_koten = Kot.query.filter_by(kotbaas_id=kotbaas.gebruiker_id, goedgekeurd=False).all()
         return render_template(
             'dashboard_kotbaas.html',
             naam=kotbaas.gebruiker.naam,
-            koten=koten
+            koten=koten,
+            pending_koten=pending_koten
         )
     
     @app.route('/dashboard_admin')
@@ -683,5 +685,17 @@ def register_routes(app):
             flash('Kot bijgewerkt.', 'success')
             return redirect(url_for('dashboard_admin_koten'))
         return render_template('admin_edit_kot.html', kot=kot)
+    
+    @app.route('/approve_kot/<int:kot_id>', methods=['POST']) # Kotbaas moet kot eerst goedkeuren
+    def approve_kot(kot_id):
+        kot = Kot.query.get_or_404(kot_id)
+        if 'gebruiker_id' not in session or session.get('rol') != 'kotbaas' or session['gebruiker_id'] != kot.kotbaas_id:
+            flash("Je mag alleen je eigen koten goedkeuren.", "error")
+            return redirect(url_for('dashboard_kotbaas'))
+        kot.goedgekeurd = True
+        db.session.commit()
+        flash("Kot succesvol goedgekeurd en zichtbaar gemaakt.", "success")
+        return redirect(url_for('dashboard_kotbaas'))
+
 
     

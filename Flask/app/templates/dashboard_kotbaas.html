@@ -28,6 +28,20 @@
             <li>Je verhuurt nog geen koten.</li>
         {% endfor %}
     </ul>
+    <h2>Inbox</h2>
+    <ul>
+    {% for kot in pending_koten %}
+        <li>
+            Student: {{ kot.student.gebruiker.naam }}<br>
+            Adres: {{ kot.adres }}<br>
+            <form method="post" action="{{ url_for('approve_kot', kot_id=kot.kot_id) }}">
+                <button type="submit">Akkoord</button>
+            </form>
+        </li>
+    {% else %}
+        <li>Je hebt geen verzoeken om te accorderen.</li>
+    {% endfor %}
+    </ul>
 
     <a href="{{ url_for('logout') }}">Uitloggen</a>
 </body>

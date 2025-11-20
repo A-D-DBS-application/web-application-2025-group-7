@@ -49,18 +49,14 @@
                 <td>
                     {% set eigenaar = None %}
                     {% if kot.kotbaas and kot.kotbaas.gebruiker %}
-                        {% set eigenaar = kot.kotbaas.gebruiker.naam %}
+                        {% set eigenaar = kot.kotbaas.gebruiker %}
                     {% elif kot.student and kot.student.gebruiker %}
-                        {% set eigenaar = kot.student.gebruiker.naam %}
+                        {% set eigenaar = kot.student.gebruiker %}
                     {% endif %}
                     {% if eigenaar %}
-                        {% set eigenaar_trimmed = eigenaar.strip() %}
-                        {% if eigenaar_trimmed %}
-                            {% set naamdelen = eigenaar_trimmed.split(' ', 1) %}
-                            {{ naamdelen[0] }}{% if naamdelen|length > 1 %} {{ naamdelen[1] }}{% endif %}
-                        {% else %}
-                            Onbekend
-                        {% endif %}
+                        <strong>{{ eigenaar.naam }}</strong><br>
+                        <span style="font-size:0.95em;">Email: {{ eigenaar.email or "n.v.t." }}</span><br>
+                        <span style="font-size:0.95em;">Tel: {{ eigenaar.telefoon or "n.v.t." }}</span>
                     {% else %}
                         Onbekend
                     {% endif %}
