@@ -51,6 +51,21 @@ def create_app():
             if 'aantal_personen' not in boeking_columns:
                 db.session.execute(text('ALTER TABLE boeking ADD COLUMN aantal_personen INTEGER NOT NULL DEFAULT 1'))
                 db.session.commit()
+
+            engine_name = db.engine.url.get_backend_name()
+            if engine_name.startswith('postgresql'):
+                seq_name = db.session.execute(
+                    text("SELECT pg_get_serial_sequence('boeking', 'boeking_id')")
+                ).scalar()
+                if seq_name:
+                    max_id = db.session.execute(
+                        text('SELECT COALESCE(MAX(boeking_id), 0) FROM boeking')
+                    ).scalar()
+                    db.session.execute(
+                        text('SELECT setval(to_regclass(:seq_name), :value, true)')
+                        .bindparams(seq_name=seq_name, value=max_id)
+                    )
+                    db.session.commit()
         except Exception:
             # Silently ignore to avoid breaking startup if inspection fails
             pass
