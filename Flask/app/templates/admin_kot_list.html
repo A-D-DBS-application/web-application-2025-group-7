@@ -21,6 +21,9 @@
         text-align: left;
         vertical-align: top;
     }
+    .booking-table th {
+        color: #0057b8;
+    }
     .booking-table thead {
         background-color: #f5f5f5;
     }
@@ -73,7 +76,14 @@
                 <td>{{ kot.beschrijving or 'n.v.t.' }}</td>
                 <td>€ {{ "%.2f"|format(stats.omzet_per_nacht if stats else 0) }}</td>
                 <td>€ {{ "%.2f"|format(stats.totale_omzet if stats else 0) }}</td>
-                <td>€ {{ "%.2f"|format(stats.toeristenbelasting if stats else 0) }}</td>
+                {% set tax_amount = stats.toeristenbelasting if stats else 0 %}
+                {% set total_amount = stats.totale_omzet if stats else 0 %}
+                <td>
+                    € {{ "%.2f"|format(tax_amount) }}
+                    {% if total_amount %}
+                        ({{ "%.1f"|format((tax_amount / total_amount) * 100 if total_amount else 0) }}%)
+                    {% endif %}
+                </td>
                 <td>€ {{ "%.2f"|format(stats.omzet_na_belasting if stats else 0) }}</td>
                 <td><a href="{{ url_for('admin_kot_edit', kot_id=kot.kot_id) }}"><button>Bewerk</button></a></td>
             </tr>
