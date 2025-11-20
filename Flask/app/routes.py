@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 import os, time
 from sqlalchemy.orm import joinedload
 from .models import Beschikbaarheid, db, Gebruiker, Student, Huurder, Kot, Boeking, Kotbaas
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def register_routes(app):
 
@@ -389,11 +389,87 @@ def register_routes(app):
 
     @app.route('/boek/<int:kot_id>', methods=['GET', 'POST'])
     def boek(kot_id):
+        if 'gebruiker_id' not in session or session.get('rol') != 'huurder':
+            flash('Log eerst in als huurder om een kot te boeken.', 'error')
+            return redirect(url_for('login'))
+
         kot = Kot.query.get_or_404(kot_id)
+        huurder = Huurder.query.get(session['gebruiker_id'])
+        if not huurder:
+            flash('Je hebt een huurderprofiel nodig om te boeken.', 'error')
+            return redirect(url_for('dashboard'))
+
+        default_start = datetime.now().date()
+        default_end = default_start + timedelta(days=30)
+
         if request.method == 'POST':
-            # Boekingslogica komt hier indien gewenst
-            pass
-        return render_template('boek.html', kot=kot)
+            startdatum_str = request.form.get('startdatum', '').strip()
+            einddatum_str = request.form.get('einddatum', '').strip()
+            aantal_personen_str = request.form.get('aantal_personen', '1').strip()
+
+            fouten = False
+            startdatum = None
+            einddatum = None
+
+            try:
+                startdatum = datetime.strptime(startdatum_str, "%Y-%m-%d")
+                einddatum = datetime.strptime(einddatum_str, "%Y-%m-%d")
+                if einddatum <= startdatum:
+                    flash('Einddatum moet later zijn dan startdatum.', 'error')
+                    fouten = True
+            except ValueError:
+                flash('Ongeldige start- of einddatum.', 'error')
+                fouten = True
+
+            try:
+                aantal_personen = int(aantal_personen_str)
+                if aantal_personen <= 0:
+                    raise ValueError
+            except ValueError:
+                flash('Aantal personen moet een positief geheel getal zijn.', 'error')
+                fouten = True
+                aantal_personen = None
+
+            max_personen = kot.aantal_slaapplaatsen or 0
+            if not fouten and max_personen and aantal_personen > max_personen:
+                flash(f'Er is maximaal plaats voor {max_personen} personen in dit kot.', 'error')
+                fouten = True
+
+            if fouten:
+                return render_template(
+                    'boek.html',
+                    kot=kot,
+                    default_start=startdatum_str or default_start.strftime('%Y-%m-%d'),
+                    default_end=einddatum_str or default_end.strftime('%Y-%m-%d'),
+                    form_data=request.form
+                )
+
+            dagen = max((einddatum - startdatum).days, 1)
+            maandprijs = kot.maandhuurprijs or 0
+            dagprijs = maandprijs / 30
+            totaalprijs = dagprijs * dagen
+
+            boeking = Boeking(
+                gebruiker_id=huurder.gebruiker_id,
+                kot_id=kot.kot_id,
+                startdatum=startdatum,
+                einddatum=einddatum,
+                totaalprijs=totaalprijs,
+                status_boeking='in afwachting',
+                aantal_personen=aantal_personen
+            )
+            db.session.add(boeking)
+            db.session.commit()
+            flash('Boeking aangevraagd! We houden je op de hoogte.', 'success')
+            return redirect(url_for('dashboard'))
+
+        return render_template(
+            'boek.html',
+            kot=kot,
+            default_start=default_start.strftime('%Y-%m-%d'),
+            default_end=default_end.strftime('%Y-%m-%d'),
+            form_data=None
+        )
 
     # Admin-only: update beschrijving
     @app.route('/admin/kot/<int:kot_id>/update_description', methods=['POST'])

@@ -71,10 +71,10 @@ class Boeking(db.Model):
     einddatum = db.Column(db.DateTime, nullable=False)
     totaalprijs = db.Column(db.Numeric)
     status_boeking = db.Column(db.String)
+    aantal_personen = db.Column(db.Integer, nullable=False, default=1)
 
 class Kotbaas(db.Model):
     __tablename__ = 'kotbaas'
     gebruiker_id = db.Column(db.Integer, db.ForeignKey('gebruiker.gebruiker_id'), primary_key=True)
     initiatiefnemer = db.Column(db.Boolean, default=False)
     gebruiker = db.relationship('Gebruiker', backref='kotbaas', uselist=False)
-

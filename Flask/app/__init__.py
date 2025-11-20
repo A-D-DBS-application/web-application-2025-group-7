@@ -46,6 +46,11 @@ def create_app():
             if 'beschrijving' not in kot_columns:
                 db.session.execute(text('ALTER TABLE kot ADD COLUMN beschrijving TEXT'))
                 db.session.commit()
+
+            boeking_columns = [col['name'] for col in inspector.get_columns('boeking')]
+            if 'aantal_personen' not in boeking_columns:
+                db.session.execute(text('ALTER TABLE boeking ADD COLUMN aantal_personen INTEGER NOT NULL DEFAULT 1'))
+                db.session.commit()
         except Exception:
             # Silently ignore to avoid breaking startup if inspection fails
             pass

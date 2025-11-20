@@ -10,6 +10,7 @@
             <th>Adres</th>
             <th>Stad</th>
             <th>Eigenaar</th>
+            <th>Capaciteit</th>
             <th>Foto</th>
             <th>Beschrijving</th>
             <th>Bewerk</th>
@@ -39,6 +40,7 @@
                         Onbekend
                     {% endif %}
                 </td>
+                <td>{{ kot.aantal_slaapplaatsen or 'n.v.t.' }}</td>
                 <td>
                     {% if kot.foto %}
                         <img src="{{ kot.foto }}" width="80">
