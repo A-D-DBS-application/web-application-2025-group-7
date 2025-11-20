@@ -1,6 +1,10 @@
 {% extends 'dashboard_admin.html' %}
 {% block dashboard_content %}
 <h2>Alle koten</h2>
+<div style="margin-bottom:10px;">
+    <a href="{{ url_for('dashboard_admin_koten') }}"><button type="button">Ververs overzicht</button></a>
+    <a href="{{ url_for('dashboard_admin') }}"><button type="button">Terug naar admin dashboard</button></a>
+</div>
 <table border="1">
     <thead>
         <tr>
@@ -24,16 +28,7 @@
                     {% endif %}
                 </td>
                 <td>{{ kot.beschrijving or 'n.v.t.' }}</td>
-                <td>
-                    <form action="{{ url_for('admin_update_description', kot_id=kot.kot_id) }}" method="post">
-                        <input type="text" name="beschrijving" value="{{ kot.beschrijving or '' }}">
-                        <button type="submit">Beschrijving bijwerken</button>
-                    </form>
-                    <form action="{{ url_for('admin_update_photo', kot_id=kot.kot_id) }}" method="post">
-                        <input type="text" name="foto" value="{{ kot.foto or '' }}">
-                        <button type="submit">Foto bijwerken</button>
-                    </form>
-                </td>
+                <td><a href="{{ url_for('admin_kot_edit', kot_id=kot.kot_id) }}"><button>Bewerk</button></a></td>
             </tr>
         {% endfor %}
     </tbody>

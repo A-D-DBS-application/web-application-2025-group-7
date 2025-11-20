@@ -1,0 +1,25 @@
+{% extends 'dashboard_admin.html' %}
+{% block dashboard_content %}
+<h2>Kot bewerken</h2>
+<p><strong>Adres:</strong> {{ kot.adres }}<br>
+<strong>Stad:</strong> {{ kot.stad }}</p>
+<form method="post" enctype="multipart/form-data" style="max-width:500px;">
+    <label>Beschrijving:<br>
+        <textarea name="beschrijving" rows="5" style="width:100%;">{{ kot.beschrijving or '' }}</textarea>
+    </label><br><br>
+    <label>Foto URL:<br>
+        <input type="text" name="foto" value="{{ kot.foto or '' }}" style="width:100%;">
+    </label><br><br>
+    <label>Of upload nieuwe foto:<br>
+        <input type="file" name="foto_file" accept="image/*">
+    </label><br><br>
+    {% if kot.foto %}
+        <div>
+            <strong>Huidige foto:</strong><br>
+            <img src="{{ kot.foto }}" alt="Foto" style="max-width:200px; height:auto; border:1px solid #ccc;">
+        </div><br>
+    {% endif %}
+    <button type="submit">Opslaan</button>
+    <a href="{{ url_for('dashboard_admin_koten') }}"><button type="button">Annuleren</button></a>
+</form>
+{% endblock %}

@@ -76,14 +76,21 @@
                 {% if session.get('rol') == 'admin' %}
                     <div style="margin:8px 0; padding:8px; border:1px dashed #aaa;">
                         <strong>Admin acties</strong>
+                        <div style="margin:6px 0;">
+                            <a href="{{ url_for('dashboard_admin_koten') }}"><button type="button">Terug naar admin overzicht</button></a>
+                        </div>
                         <form method="post" action="{{ url_for('admin_update_description', kot_id=kot.kot_id) }}" style="margin-top:6px;">
                             <label>Beschrijving toevoegen/bijwerken:</label><br>
                             <textarea name="beschrijving" rows="3" style="width:100%;">{{ kot.beschrijving or '' }}</textarea>
                             <button type="submit">Opslaan beschrijving</button>
                         </form>
-                        <form method="post" action="{{ url_for('admin_update_photo', kot_id=kot.kot_id) }}" style="margin-top:6px;">
+                        <form method="post" action="{{ url_for('admin_update_photo', kot_id=kot.kot_id) }}" style="margin-top:6px;" enctype="multipart/form-data">
                             <label>Foto-URL toevoegen/bijwerken:</label>
                             <input type="text" name="foto" value="{{ kot.foto or '' }}" style="width:100%;">
+                            <div style="margin:6px 0;">
+                                <label>Of upload lokaal bestand:</label>
+                                <input type="file" name="foto_file" accept="image/*">
+                            </div>
                             <button type="submit">Opslaan foto</button>
                         </form>
                     </div>

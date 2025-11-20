@@ -1,6 +1,8 @@
 from operator import and_
 from warnings import filters
 from flask import render_template, request, redirect, url_for, session, flash
+from werkzeug.utils import secure_filename
+import os, time
 from .models import Beschikbaarheid, db, Gebruiker, Student, Huurder, Kot, Boeking, Kotbaas
 from datetime import datetime
 
@@ -387,6 +389,9 @@ def register_routes(app):
         kot.beschrijving = nieuwe_beschrijving or None
         db.session.commit()
         flash('Beschrijving bijgewerkt.', 'success')
+        # Redirect terug naar juiste beheer pagina indien daarvandaan gekomen
+        if request.referrer and 'dashboard_admin_koten' in request.referrer:
+            return redirect(url_for('dashboard_admin_koten'))
         return redirect(url_for('index'))
 
     # Admin-only: update foto URL
@@ -395,10 +400,33 @@ def register_routes(app):
         if session.get('rol') != 'admin':
             return redirect(url_for('login'))
         kot = Kot.query.get_or_404(kot_id)
-        nieuwe_foto = request.form.get('foto', '').strip()
-        kot.foto = nieuwe_foto or ''
+        # 1) If a file is uploaded, save it under static/uploads and set foto to its URL
+        file = request.files.get('foto_file')
+        if file and file.filename:
+            filename = secure_filename(file.filename)
+            # allow only common image extensions
+            allowed = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
+            ext = os.path.splitext(filename)[1].lower()
+            if ext in allowed:
+                uploads_dir = os.path.join(app.static_folder, 'uploads')
+                os.makedirs(uploads_dir, exist_ok=True)
+                unique_name = f"kot{kot_id}_{int(time.time())}{ext}"
+                save_path = os.path.join(uploads_dir, unique_name)
+                file.save(save_path)
+                # store absolute static path so templates don't need changes
+                static_rel = f"uploads/{unique_name}"
+                kot.foto = url_for('static', filename=static_rel)
+            else:
+                flash('Bestandstype niet toegestaan. Gebruik jpg, jpeg, png, gif of webp.', 'error')
+        else:
+            # 2) Fallback to URL field if provided
+            nieuwe_foto = request.form.get('foto', '').strip()
+            if nieuwe_foto:
+                kot.foto = nieuwe_foto
         db.session.commit()
         flash('Foto-URL bijgewerkt.', 'success')
+        if request.referrer and 'dashboard_admin_koten' in request.referrer:
+            return redirect(url_for('dashboard_admin_koten'))
         return redirect(url_for('index'))
 
     @app.route('/logout')
@@ -434,5 +462,38 @@ def register_routes(app):
             return redirect(url_for('login'))
         koten = Kot.query.all()
         return render_template('admin_kot_list.html', koten=koten)
+
+    @app.route('/admin/kot/<int:kot_id>/edit', methods=['GET', 'POST'])
+    def admin_kot_edit(kot_id):
+        if session.get('rol') != 'admin':
+            return redirect(url_for('login'))
+        kot = Kot.query.get_or_404(kot_id)
+        if request.method == 'POST':
+            nieuwe_beschrijving = request.form.get('beschrijving', '').strip()
+            kot.beschrijving = nieuwe_beschrijving or None
+            # Foto via URL
+            foto_url = request.form.get('foto', '').strip()
+            # Foto via upload
+            file = request.files.get('foto_file')
+            if file and file.filename:
+                filename = secure_filename(file.filename)
+                allowed = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
+                ext = os.path.splitext(filename)[1].lower()
+                if ext in allowed:
+                    uploads_dir = os.path.join(app.static_folder, 'uploads')
+                    os.makedirs(uploads_dir, exist_ok=True)
+                    unique_name = f"kot{kot_id}_{int(time.time())}{ext}"
+                    save_path = os.path.join(uploads_dir, unique_name)
+                    file.save(save_path)
+                    static_rel = f"uploads/{unique_name}"
+                    kot.foto = url_for('static', filename=static_rel)
+                else:
+                    flash('Bestandstype niet toegestaan.', 'error')
+            elif foto_url:
+                kot.foto = foto_url
+            db.session.commit()
+            flash('Kot bijgewerkt.', 'success')
+            return redirect(url_for('dashboard_admin_koten'))
+        return render_template('admin_edit_kot.html', kot=kot)
 
     
