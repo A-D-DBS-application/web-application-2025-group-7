@@ -25,12 +25,14 @@
             <th>Telefoon</th>
             <th>Kot</th>
             <th>Aantal personen</th>
+            <th>Voorkeuren/Opmerkingen</th>
             <th>Status</th>
             <th>Periode</th>
         </tr>
     </thead>
     <tbody>
         {% for boeking in boekingen %}
+            {% set huurder = boeking.huurder if boeking.huurder else None %}
             {% set gebruiker = boeking.huurder.gebruiker if boeking.huurder else None %}
             <tr>
                 <td>{{ gebruiker.naam if gebruiker else 'n.v.t.' }}</td>
@@ -47,6 +49,7 @@
                     {{ boeking.kot.stad if boeking.kot else '' }}
                 </td>
                 <td>{{ boeking.aantal_personen }}</td>
+                <td>{{ huurder.voorkeuren if huurder.voorkeuren else 'n.v.t.' }}</td>
                 <td>{{ boeking.status_boeking }}</td>
                 {% set start = boeking.startdatum %}
                 {% set eind = boeking.einddatum %}

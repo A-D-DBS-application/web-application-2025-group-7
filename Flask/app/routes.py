@@ -408,6 +408,7 @@ def register_routes(app):
             startdatum_str = request.form.get('startdatum', '').strip()
             einddatum_str = request.form.get('einddatum', '').strip()
             aantal_personen_str = request.form.get('aantal_personen', '1').strip()
+            voorkeuren_str = request.form.get('voorkeuren', '').strip()
 
             fouten = False
             startdatum = None
@@ -443,7 +444,8 @@ def register_routes(app):
                     kot=kot,
                     default_start=startdatum_str or default_start.strftime('%Y-%m-%d'),
                     default_end=einddatum_str or default_end.strftime('%Y-%m-%d'),
-                    form_data=request.form
+                    form_data=request.form,
+                    huurder=huurder
                 )
 
             dagen = max((einddatum - startdatum).days, 1)
@@ -452,6 +454,11 @@ def register_routes(app):
             totale_maandprijs = maandprijs + egwkosten
             dagprijs = totale_maandprijs / 30 if totale_maandprijs else 0
             totaalprijs = dagprijs * dagen
+
+            # Voorkeuren opslaan bij huurder
+            if voorkeuren_str:
+                huurder.voorkeuren = voorkeuren_str
+                db.session.commit()
 
             boeking = Boeking(
                 gebruiker_id=huurder.gebruiker_id,
@@ -472,7 +479,8 @@ def register_routes(app):
             kot=kot,
             default_start=default_start.strftime('%Y-%m-%d'),
             default_end=default_end.strftime('%Y-%m-%d'),
-            form_data=None
+            form_data=None,
+            huurder=huurder
         )
 
     # Admin-only: update beschrijving

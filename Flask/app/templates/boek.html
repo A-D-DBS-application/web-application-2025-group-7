@@ -2,39 +2,48 @@
 <html>
 <head>
     <title>Boek kot</title>
+    <meta charset="UTF-8">
+    <style>
+        label { display: block; margin-top: 10px; }
+        input, button { margin-bottom: 10px; }
+        ul { list-style-type: none; padding: 0; }
+    </style>
 </head>
 <body>
     <h1>Kot boeken</h1>
     <h2>{{ kot.adres }}, {{ kot.stad }}</h2>
     <p>Prijs: €{{ kot.maandhuurprijs }} / maand</p>
+
     {% with messages = get_flashed_messages(with_categories=True) %}
-        {% if messages %}
-            <ul>
-                {% for category, message in messages %}
-                    <li style="color:{% if category == 'error' %}red{% else %}green{% endif %};">{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
+      {% if messages %}
+        <ul>
+          {% for category, message in messages %}
+            <li style="color:{% if category == 'error' %}red{% else %}green{% endif %};">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
     {% endwith %}
-    <form method="POST">
-        <label>Startdatum:
-            <input type="date" name="startdatum" value="{{ (form_data.get('startdatum') if form_data else default_start) }}" required>
-        </label><br>
-        <label>Einddatum:
-            <input type="date" name="einddatum" value="{{ (form_data.get('einddatum') if form_data else default_end) }}" required>
-        </label><br>
-        <label>Aantal personen:
-            <input type="number" name="aantal_personen"
-                   min="1"
-                   {% if kot.aantal_slaapplaatsen %}max="{{ kot.aantal_slaapplaatsen }}"{% endif %}
-                   value="{{ (form_data.get('aantal_personen') if form_data else 1) }}"
-                   required>
-        </label>
-        {% if kot.aantal_slaapplaatsen %}
-            <p style="font-size:0.9rem; color:#555;">Maximaal {{ kot.aantal_slaapplaatsen }} personen toegestaan.</p>
-        {% endif %}
-        <button type="submit">Bevestig boeking</button>
+
+    <form method="post">
+        <label for="startdatum">Startdatum:</label>
+        <input type="date" name="startdatum" id="startdatum"
+            value="{% if form_data and form_data.startdatum %}{{ form_data.startdatum }}{% else %}{{ default_start }}{% endif %}">
+
+        <label for="einddatum">Einddatum:</label>
+        <input type="date" name="einddatum" id="einddatum"
+            value="{% if form_data and form_data.einddatum %}{{ form_data.einddatum }}{% else %}{{ default_end }}{% endif %}">
+
+        <label for="aantal_personen">Aantal personen:</label>
+        <input type="number" name="aantal_personen" id="aantal_personen" min="1"
+            value="{% if form_data and form_data.aantal_personen %}{{ form_data.aantal_personen }}{% else %}1{% endif %}">
+
+        <label for="voorkeuren">Voorkeuren/Opmerkingen (optioneel):</label>
+        <input type="text" name="voorkeuren" id="voorkeuren"
+            value="{% if form_data and form_data.voorkeuren %}{{ form_data.voorkeuren }}{% elif huurder and huurder.voorkeuren %}{{ huurder.voorkeuren }}{% else %}{% endif %}">
+
+        <button type="submit">Boek kot</button>
     </form>
+
     <a href="{{ url_for('index') }}">Annuleren</a>
 </body>
 </html>
