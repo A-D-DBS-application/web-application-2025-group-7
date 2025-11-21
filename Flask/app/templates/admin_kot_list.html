@@ -38,6 +38,7 @@
             <th>Beschrijving</th>
             <th>Omzet per nacht</th>
             <th>Totale omzet</th>
+            <th>EGW-kosten (deel van omzet)</th>
             <th>Toeristenbelasting (tarief 6%)</th>
             <th>Omzet na toeristenbelasting</th>
             <th>Bewerk</th>
@@ -75,6 +76,13 @@
                 <td>{{ kot.beschrijving or 'n.v.t.' }}</td>
                 <td>€ {{ "%.2f"|format(stats.omzet_per_nacht if stats else 0) }}</td>
                 <td>€ {{ "%.2f"|format(stats.totale_omzet if stats else 0) }}</td>
+                {% set egw_share = stats.egw_aandeel_omzet if stats else 0 %}
+                {% set egw_month = stats.egw_per_maand if stats else (kot.egwkosten or 0) %}
+                {% set egw_night = stats.egw_per_nacht if stats else ((kot.egwkosten or 0) / 30 if (kot.egwkosten or 0) else 0) %}
+                <td>
+                    € {{ "%.2f"|format(egw_share) }} van omzet<br>
+                    <small>€ {{ "%.2f"|format(egw_month) }}/mnd · € {{ "%.2f"|format(egw_night) }}/nacht</small>
+                </td>
                 {% set tax_amount = stats.toeristenbelasting if stats else 0 %}
                 {% set total_amount = stats.totale_omzet if stats else 0 %}
                 <td>€ {{ "%.2f"|format(tax_amount) }}</td>

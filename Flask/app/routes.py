@@ -447,8 +447,10 @@ def register_routes(app):
                 )
 
             dagen = max((einddatum - startdatum).days, 1)
-            maandprijs = kot.maandhuurprijs or 0
-            dagprijs = maandprijs / 30
+            maandprijs = float(kot.maandhuurprijs or 0)
+            egwkosten = float(kot.egwkosten or 0)
+            totale_maandprijs = maandprijs + egwkosten
+            dagprijs = totale_maandprijs / 30 if totale_maandprijs else 0
             totaalprijs = dagprijs * dagen
 
             boeking = Boeking(
@@ -567,7 +569,9 @@ def register_routes(app):
 
         for kot in koten:
             maandhuur = float(kot.maandhuurprijs or 0)
-            omzet_per_nacht = maandhuur / 30 if maandhuur else 0
+            egwkosten = float(kot.egwkosten or 0)
+            totale_maandlast = maandhuur + egwkosten
+            omzet_per_nacht = totale_maandlast / 30 if totale_maandlast else 0
             totale_omzet = 0.0
 
             for boeking in kot.boekingen:
@@ -575,12 +579,17 @@ def register_routes(app):
                 totale_omzet += totaalprijs
 
             toeristenbelasting = totale_omzet * DEFAULT_TOURIST_TAX_RATE
+            egw_aandeel_omzet = totale_omzet * (egwkosten / totale_maandlast) if totale_maandlast else 0
+            egw_per_nacht = egwkosten / 30 if egwkosten else 0
 
             kot_statistieken[kot.kot_id] = {
                 'omzet_per_nacht': omzet_per_nacht,
                 'totale_omzet': totale_omzet,
                 'toeristenbelasting': toeristenbelasting,
                 'omzet_na_belasting': max(totale_omzet - toeristenbelasting, 0.0),
+                'egw_per_maand': egwkosten,
+                'egw_per_nacht': egw_per_nacht,
+                'egw_aandeel_omzet': egw_aandeel_omzet,
             }
 
         return render_template(
