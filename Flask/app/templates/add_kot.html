@@ -1,57 +1,157 @@
 <!doctype html>
-<html>
+<html lang="nl">
 <head>
+    <meta charset="UTF-8" />
     <title>Voeg kot toe</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
 </head>
-<body>
-    <h1>Voeg een kot toe</h1>
+
+<body class="bg-light">
+
+<div class="container mt-5 mb-5">
+
+    <h1 class="mb-4">Voeg een kot toe</h1>
 
     {% with messages = get_flashed_messages(with_categories=True) %}
         {% if messages %}
-            <ul>
-                {% for category, message in messages %}
-                    <li style="color:red; font-weight: bold;">{{ message }}</li>
-                {% endfor %}
-            </ul>
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    {% for category, message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
         {% endif %}
     {% endwith %}
 
-    <form method="POST">
-        <label>Adres: <input type="text" name="adres" required></label><br>
-        <label>Stad: <input type="text" name="stad" required></label><br>
-        <label>Oppervlakte (m²): <input type="number" name="oppervlakte" required></label><br>
-        <label>Slaapplaatsen: <input type="number" name="aantal_slaapplaatsen" required></label><br>
-        <label>Maandhuurprijs: <input type="number" name="maandhuurprijs" required></label><br>
-        <label>EGW-kosten: <input type="number" name="egwkosten"></label><br>
-        {% if rol == 'kotbaas' or rol == 'admin' %}
-        <label>Beschrijving:<br>
-            <textarea name="beschrijving" placeholder="Beschrijf het kot"></textarea>
-        </label><br>
-        <label>Foto URL: <input type="text" name="foto" placeholder="URL van foto (optioneel)"></label><br>
-        {% endif %}
-        <label>Eigen keuken: <input type="checkbox" name="eigen_keuken"></label><br>
-        <label>Eigen sanitair: <input type="checkbox" name="eigen_sanitair"></label><br>
-        <label>Startdatum beschikbaarheid: <input type="date" name="startdatum" required></label><br>
-        <label>Einddatum beschikbaarheid: <input type="date" name="einddatum" required></label><br>
-        {% if rol == 'student' %}
-            <label>Kotbaas voornaam: <input type="text" name="kotbaas_voornaam" required></label><br>
-            <label>Kotbaas achternaam: <input type="text" name="kotbaas_achternaam" required></label><br>
-        {% elif rol == 'kotbaas' %}
-            {% set huidige_naam = gebruiker.naam.strip() if gebruiker and gebruiker.naam else '' %}
-            {% set naamdelen = huidige_naam.split(' ', 1) if huidige_naam else [] %}
-            <fieldset style="max-width:320px;">
-                <legend>Eigenaar</legend>
-                <label>Voornaam: <input type="text" name="eigenaar_voornaam" value="{{ naamdelen[0] if naamdelen|length > 0 else '' }}" required></label><br>
-                <label>Achternaam: <input type="text" name="eigenaar_achternaam" value="{{ naamdelen[1] if naamdelen|length > 1 else '' }}" required></label><br>
-            </fieldset>
-            <label>Student naam: <input type="text" name="student_naam" required></label><br>
-        {% endif %}
-        <label>
-            <input type="checkbox" name="initiatiefnemer" value="1">
-            Ik ben initiatiefnemer van dit kot
-        </label><br>
-        <button type="submit">Toevoegen</button>
-    </form>
-    <a href="{{ url_for('dashboard') }}">Terug</a>
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <form method="POST" class="row g-3">
+
+                <div class="col-md-6">
+                    <label class="form-label">Adres</label>
+                    <input type="text" name="adres" class="form-control" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Stad</label>
+                    <input type="text" name="stad" class="form-control" required>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Oppervlakte (m²)</label>
+                    <input type="number" name="oppervlakte" class="form-control" required>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Slaapplaatsen</label>
+                    <input type="number" name="aantal_slaapplaatsen" class="form-control" required>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Maandhuurprijs (€)</label>
+                    <input type="number" name="maandhuurprijs" class="form-control" required>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">EGW-kosten (€)</label>
+                    <input type="number" name="egwkosten" class="form-control">
+                </div>
+
+                {% if rol == 'kotbaas' or rol == 'admin' %}
+                <div class="col-12">
+                    <label class="form-label">Beschrijving</label>
+                    <textarea class="form-control" name="beschrijving" rows="3" placeholder="Beschrijf het kot"></textarea>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Foto URL</label>
+                    <input type="text" name="foto" class="form-control" placeholder="URL van foto (optioneel)">
+                </div>
+                {% endif %}
+
+                <div class="col-md-6">
+                    <label class="form-check-label">
+                        <input class="form-check-input" type="checkbox" name="eigen_keuken">
+                        Eigen keuken
+                    </label>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-check-label">
+                        <input class="form-check-input" type="checkbox" name="eigen_sanitair">
+                        Eigen sanitair
+                    </label>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Startdatum</label>
+                    <input type="date" name="startdatum" class="form-control" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Einddatum</label>
+                    <input type="date" name="einddatum" class="form-control" required>
+                </div>
+
+                {% if rol == 'student' %}
+                <div class="col-md-6">
+                    <label class="form-label">Kotbaas voornaam</label>
+                    <input type="text" name="kotbaas_voornaam" class="form-control" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Kotbaas achternaam</label>
+                    <input type="text" name="kotbaas_achternaam" class="form-control" required>
+                </div>
+
+                {% elif rol == 'kotbaas' %}
+                    {% set huidige_naam = gebruiker.naam.strip() if gebruiker and gebruiker.naam else '' %}
+                    {% set naamdelen = huidige_naam.split(' ', 1) if huidige_naam else [] %}
+
+                <div class="col-md-6">
+                    <label class="form-label">Voornaam eigenaar</label>
+                    <input type="text" name="eigenaar_voornaam" class="form-control" value="{{ naamdelen[0] if naamdelen|length > 0 else '' }}" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Achternaam eigenaar</label>
+                    <input type="text" name="eigenaar_achternaam" class="form-control" value="{{ naamdelen[1] if naamdelen|length > 1 else '' }}" required>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label">Naam student</label>
+                    <input type="text" name="student_naam" class="form-control" required>
+                </div>
+                {% endif %}
+
+                <div class="col-12">
+                    <label class="form-check-label">
+                        <input class="form-check-input" type="checkbox" name="initiatiefnemer" value="1">
+                        Ik ben initiatiefnemer van dit kot
+                    </label>
+                </div>
+
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Kot toevoegen</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <a href="{{ url_for('dashboard') }}" class="btn btn-link mt-3">Terug naar dashboard</a>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

@@ -1,48 +1,161 @@
 <!doctype html>
-<html>
+<html lang="nl">
 <head>
+    <meta charset="UTF-8">
     <title>Kotbaas Dashboard</title>
-</head>
-<body>
-    <h1>Welkom terug, {{ naam }}!</h1>
 
-    <form action="{{ url_for('add_kot') }}">
-        <button type="submit">Voeg een kot toe</button>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #003b95;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 900px;
+            margin: 40px auto;
+        }
+
+        h2 {
+            color: #003b95;
+            margin-top: 40px;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary {
+            background-color: #0071c2;
+            border: none;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-primary:hover {
+            background-color: #005999;
+        }
+
+        .btn-danger {
+            background-color: #d93025;
+            border: none;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn-danger:hover {
+            background-color: #b9231b;
+        }
+
+        .kot-card {
+            background: white;
+            padding: 20px;
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+
+        .info-line {
+            margin: 3px 0;
+            color: #555;
+        }
+
+        .top-btn {
+            margin-bottom: 30px;
+        }
+
+        .inbox-card {
+            background: white;
+            padding: 18px;
+            border-radius: 14px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        a.logout {
+            display: inline-block;
+            margin-top: 35px;
+            text-decoration: none;
+            color: #003b95;
+            font-weight: bold;
+        }
+
+        a.logout:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Welkom terug, {{ naam }}!</h1>
+</header>
+
+<div class="container">
+
+    <!-- KOT TOEVOEGEN -->
+    <form action="{{ url_for('add_kot') }}" class="top-btn">
+        <button type="submit" class="btn-primary">+ Voeg een kot toe</button>
     </form>
 
+    <!-- VERHUURDE KOTEN -->
     <h2>Mijn verhuurde koten</h2>
-    <ul>
-        {% for kot in koten %}
-            <li>
-                <strong>{{ kot.adres }}, {{ kot.stad }}</strong><br>
-                Oppervlakte: {{ kot.oppervlakte }} m²<br>
-                Slaapplaatsen: {{ kot.aantal_slaapplaatsen }}<br>
-                Prijs: €{{ kot.maandhuurprijs }}/maand<br>
-                Student: {{ kot.student.gebruiker.naam if kot.student else "n.v.t." }}<br>
-                Initiatiefnemer: {{ kot.initiatiefnemer }}<br>
-                <form action="{{ url_for('verwijder_kot', kot_id=kot.kot_id) }}" method="post" style="display:inline;">
-                    <button type="submit" onclick="return confirm('Weet je zeker dat je dit kot wilt verwijderen?');">Verwijder</button>
-                </form>
-            </li>
-        {% else %}
-            <li>Je verhuurt nog geen koten.</li>
-        {% endfor %}
-    </ul>
-    <h2>Inbox</h2>
-    <ul>
-    {% for kot in pending_koten %}
-        <li>
-            Student: {{ kot.student.gebruiker.naam }}<br>
-            Adres: {{ kot.adres }}<br>
-            <form method="post" action="{{ url_for('approve_kot', kot_id=kot.kot_id) }}">
-                <button type="submit">Akkoord</button>
-            </form>
-        </li>
-    {% else %}
-        <li>Je hebt geen verzoeken om te accorderen.</li>
-    {% endfor %}
-    </ul>
 
-    <a href="{{ url_for('logout') }}">Uitloggen</a>
+    {% for kot in koten %}
+        <div class="kot-card">
+            <h3 style="margin-top:0;">{{ kot.adres }}, {{ kot.stad }}</h3>
+
+            <p class="info-line">Oppervlakte: {{ kot.oppervlakte }} m²</p>
+            <p class="info-line">Slaapplaatsen: {{ kot.aantal_slaapplaatsen }}</p>
+            <p class="info-line">Prijs: <strong>€{{ kot.maandhuurprijs }}/maand</strong></p>
+
+            <p class="info-line">Student: {{ kot.student.gebruiker.naam if kot.student else "n.v.t." }}</p>
+            <p class="info-line">Initiatiefnemer: {{ kot.initiatiefnemer }}</p>
+
+            <form action="{{ url_for('verwijder_kot', kot_id=kot.kot_id) }}" method="post">
+                <button class="btn-danger"
+                onclick="return confirm('Weet je zeker dat je dit kot wilt verwijderen?');">
+                Verwijder
+                </button>
+            </form>
+        </div>
+    {% else %}
+        <p class="info-line">Je verhuurt nog geen koten.</p>
+    {% endfor %}
+
+    <!-- INBOX -->
+    <h2>Inbox</h2>
+
+    {% for kot in pending_koten %}
+        <div class="inbox-card">
+            <p><strong>Student:</strong> {{ kot.student.gebruiker.naam }}</p>
+            <p><strong>Adres:</strong> {{ kot.adres }}</p>
+
+            <form method="post" action="{{ url_for('approve_kot', kot_id=kot.kot_id) }}">
+                <button class="btn-primary">Akkoord</button>
+            </form>
+        </div>
+    {% else %}
+        <p class="info-line">Je hebt geen verzoeken om te accorderen.</p>
+    {% endfor %}
+
+    <a href="{{ url_for('logout') }}" class="logout">Uitloggen</a>
+
+</div>
+
 </body>
 </html>

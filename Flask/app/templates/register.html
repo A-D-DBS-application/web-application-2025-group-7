@@ -1,35 +1,142 @@
 <!doctype html>
-<html>
+<html lang="nl">
 <head>
+    <meta charset="UTF-8">
     <title>Registreren</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #003b95;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 500px;
+            margin: 40px auto;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #003b95;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 15px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #0071c2;
+        }
+
+        .btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #0071c2;
+            border: none;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #005999;
+        }
+
+        .link {
+            display: block;
+            margin-top: 15px;
+            text-align: center;
+            color: #003b95;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
+
     <script>
-    // Toon universiteit-veld alleen als 'student' gekozen is
     function toggleUni() {
         var rol = document.getElementById('rol').value;
         document.getElementById('uni-row').style.display = rol === 'student' ? 'block' : 'none';
     }
     </script>
 </head>
+
 <body onload="toggleUni()">
+
+<header>
     <h1>Registreren</h1>
-    <form method="POST">
-        <label>Naam: <input type="text" name="naam" required></label><br>
-        <label>Email: <input type="email" name="email" required></label><br>
-        <label>Telefoon: <input type="text" name="telefoon" required></label><br>
-        <label>Type:
+</header>
+
+<div class="container">
+    <div class="card">
+        <h2>Maak een account aan</h2>
+
+        <form method="POST">
+
+            <label>Naam</label>
+            <input type="text" name="naam" required>
+
+            <label>Email</label>
+            <input type="email" name="email" required>
+
+            <label>Telefoon</label>
+            <input type="text" name="telefoon" required>
+
+            <label>Type</label>
             <select id="rol" name="rol" onchange="toggleUni()">
                 <option value="student">Student</option>
                 <option value="huurder">Huurder</option>
-                <option value="kotbaas">Kotbaas</option>    
+                <option value="kotbaas">Kotbaas</option>
             </select>
-        </label><br>
-        <div id="uni-row">
-            <label>Universiteit: <input type="text" name="universiteit"></label><br>
-        </div>
-        <button type="submit">Registreren</button>
-    </form>
-    <a href="{{ url_for('login') }}">Heb je al een account?</a>
+
+            <div id="uni-row">
+                <label>Universiteit</label>
+                <input type="text" name="universiteit">
+            </div>
+
+            <button class="btn" type="submit">Registreren</button>
+
+        </form>
+
+        <a class="link" href="{{ url_for('login') }}">Heb je al een account?</a>
+    </div>
+</div>
+
 </body>
 </html>
-
-

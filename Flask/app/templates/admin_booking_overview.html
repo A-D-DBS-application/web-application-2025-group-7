@@ -1,22 +1,42 @@
 {% extends 'dashboard_admin.html' %}
 {% block dashboard_content %}
-<h2>Alle boekingen</h2>
+
+<h2 style="color:#003b95; margin-top:0;">Alle boekingen</h2>
+
 <style>
+    /* Tabel in moderne kaart-stijl */
     .booking-table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 1rem;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.08);
     }
-    .booking-table th,
-    .booking-table td {
-        border: 1px solid #ddd;
-        padding: 0.5rem 0.75rem;
-        text-align: left;
-    }
+
     .booking-table thead {
-        background-color: #f5f5f5;
+        background-color: #eef3f8;
+    }
+
+    .booking-table th {
+        padding: 12px;
+        font-weight: bold;
+        color: #003b95;
+        border-bottom: 1px solid #d6d6d6;
+    }
+
+    .booking-table td {
+        padding: 12px;
+        border-bottom: 1px solid #e6e6e6;
+        color: #444;
+    }
+
+    .booking-table tr:last-child td {
+        border-bottom: none;
     }
 </style>
+
 <table class="booking-table">
     <thead>
         <tr>
@@ -30,13 +50,16 @@
             <th>Periode</th>
         </tr>
     </thead>
+
     <tbody>
         {% for boeking in boekingen %}
             {% set huurder = boeking.huurder if boeking.huurder else None %}
             {% set gebruiker = boeking.huurder.gebruiker if boeking.huurder else None %}
+
             <tr>
                 <td>{{ gebruiker.naam if gebruiker else 'n.v.t.' }}</td>
                 <td>{{ gebruiker.email if gebruiker else 'n.v.t.' }}</td>
+
                 <td>
                     {% if gebruiker and gebruiker.telefoon %}
                         {{ gebruiker.telefoon | format_phone }}
@@ -44,25 +67,28 @@
                         n.v.t.
                     {% endif %}
                 </td>
+
                 <td>
                     {{ boeking.kot.adres if boeking.kot else 'n.v.t.' }},
                     {{ boeking.kot.stad if boeking.kot else '' }}
                 </td>
+
                 <td>{{ boeking.aantal_personen }}</td>
-                <td>{{ huurder.voorkeuren if huurder.voorkeuren else 'n.v.t.' }}</td>
+                <td>{{ huurder.voorkeuren if huurder and huurder.voorkeuren else 'n.v.t.' }}</td>
                 <td>{{ boeking.status_boeking }}</td>
+
                 {% set start = boeking.startdatum %}
                 {% set eind = boeking.einddatum %}
+
                 <td>
                     {% if start or eind %}
                         {% set start_str = start.strftime('%Y-%m-%d') if start else 'n.v.t.' %}
                         {% set eind_str = eind.strftime('%Y-%m-%d') if eind else 'n.v.t.' %}
                         {{ start_str }} t.e.m. {{ eind_str }}
+
                         {% if start and eind %}
                             {% set dagen = (eind - start).days %}
-                            {% if dagen < 1 %}
-                                {% set dagen = 1 %}
-                            {% endif %}
+                            {% if dagen < 1 %}{% set dagen = 1 %}{% endif %}
                             ({{ dagen }} dagen)
                         {% endif %}
                     {% else %}
@@ -70,9 +96,11 @@
                     {% endif %}
                 </td>
             </tr>
+
         {% else %}
-            <tr><td colspan="7">Geen boekingen gevonden.</td></tr>
+            <tr><td colspan="8" style="text-align:center; padding:20px;">Geen boekingen gevonden.</td></tr>
         {% endfor %}
     </tbody>
 </table>
+
 {% endblock %}

@@ -1,49 +1,169 @@
 <!doctype html>
-<html>
+<html lang="nl">
 <head>
-    <title>Boek kot</title>
     <meta charset="UTF-8">
+    <title>Kot boeken</title>
+
     <style>
-        label { display: block; margin-top: 10px; }
-        input, button { margin-bottom: 10px; }
-        ul { list-style-type: none; padding: 0; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+        }
+
+        header {
+            background-color: #003b95;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 700px;
+            margin: 30px auto;
+        }
+
+        .book-card {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #003b95;
+            margin-top: 0;
+        }
+
+        label {
+            font-weight: bold;
+            color: #003b95;
+            margin-top: 15px;
+            display: block;
+        }
+
+        input[type="date"],
+        input[type="number"],
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-top: 5px;
+            font-size: 15px;
+        }
+
+        .btn-primary {
+            background-color: #0071c2;
+            border: none;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .btn-primary:hover {
+            background-color: #005999;
+        }
+
+        .btn-secondary {
+            color: #003b95;
+            text-decoration: none;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+
+        .btn-secondary:hover {
+            text-decoration: underline;
+        }
+
+        .messages ul {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        .messages li {
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .msg-error {
+            background: #ffe5e5;
+            color: #d40000;
+            border-left: 4px solid #d40000;
+        }
+
+        .msg-success {
+            background: #e5ffea;
+            color: #008f3b;
+            border-left: 4px solid #008f3b;
+        }
     </style>
 </head>
+
 <body>
+
+<header>
     <h1>Kot boeken</h1>
-    <h2>{{ kot.adres }}, {{ kot.stad }}</h2>
-    <p>Prijs: €{{ kot.maandhuurprijs }} / maand</p>
+</header>
 
-    {% with messages = get_flashed_messages(with_categories=True) %}
-      {% if messages %}
-        <ul>
-          {% for category, message in messages %}
-            <li style="color:{% if category == 'error' %}red{% else %}green{% endif %};">{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
+<div class="container">
 
-    <form method="post">
-        <label for="startdatum">Startdatum:</label>
-        <input type="date" name="startdatum" id="startdatum"
-            value="{% if form_data and form_data.startdatum %}{{ form_data.startdatum }}{% else %}{{ default_start }}{% endif %}">
+    <div class="book-card">
 
-        <label for="einddatum">Einddatum:</label>
-        <input type="date" name="einddatum" id="einddatum"
-            value="{% if form_data and form_data.einddatum %}{{ form_data.einddatum }}{% else %}{{ default_end }}{% endif %}">
+        <h2>{{ kot.adres }}, {{ kot.stad }}</h2>
+        <p style="color:#444; margin-top:5px;">
+            <strong>Prijs:</strong> €{{ kot.maandhuurprijs }} / maand
+        </p>
 
-        <label for="aantal_personen">Aantal personen:</label>
-        <input type="number" name="aantal_personen" id="aantal_personen" min="1"
-            value="{% if form_data and form_data.aantal_personen %}{{ form_data.aantal_personen }}{% else %}1{% endif %}">
+        <!-- Meldingen -->
+        <div class="messages">
+        {% with messages = get_flashed_messages(with_categories=True) %}
+          {% if messages %}
+            <ul>
+              {% for category, message in messages %}
+                <li class="{% if category == 'error' %}msg-error{% else %}msg-success{% endif %}">
+                    {{ message }}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+        </div>
 
-        <label for="voorkeuren">Voorkeuren/Opmerkingen (optioneel):</label>
-        <input type="text" name="voorkeuren" id="voorkeuren"
-            value="{% if form_data and form_data.voorkeuren %}{{ form_data.voorkeuren }}{% elif huurder and huurder.voorkeuren %}{{ huurder.voorkeuren }}{% else %}{% endif %}">
+        <!-- Formulier -->
+        <form method="post">
 
-        <button type="submit">Boek kot</button>
-    </form>
+            <label for="startdatum">Startdatum</label>
+            <input type="date" name="startdatum" id="startdatum"
+                value="{% if form_data and form_data.startdatum %}{{ form_data.startdatum }}{% else %}{{ default_start }}{% endif %}">
 
-    <a href="{{ url_for('index') }}">Annuleren</a>
+            <label for="einddatum">Einddatum</label>
+            <input type="date" name="einddatum" id="einddatum"
+                value="{% if form_data and form_data.einddatum %}{{ form_data.einddatum }}{% else %}{{ default_end }}{% endif %}">
+
+            <label for="aantal_personen">Aantal personen</label>
+            <input type="number" name="aantal_personen" id="aantal_personen" min="1"
+                value="{% if form_data and form_data.aantal_personen %}{{ form_data.aantal_personen }}{% else %}1{% endif %}">
+
+            <label for="voorkeuren">Voorkeuren/Opmerkingen (optioneel)</label>
+            <input type="text" name="voorkeuren" id="voorkeuren"
+                value="{% if form_data and form_data.voorkeuren %}{{ form_data.voorkeuren }}{% elif huurder and huurder.voorkeuren %}{{ huurder.voorkeuren }}{% else %}{% endif %}">
+
+            <button type="submit" class="btn-primary">Boek kot</button>
+            <a href="{{ url_for('index') }}" class="btn-secondary">Annuleren</a>
+
+        </form>
+
+    </div>
+
+</div>
+
 </body>
 </html>

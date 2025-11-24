@@ -1,60 +1,179 @@
 <!doctype html>
-<html>
-<head><title>Login</title></head>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Inloggen</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #003b95;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 450px;
+            margin: 40px auto;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #003b95;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 15px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #0071c2;
+        }
+
+        .btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #0071c2;
+            border: none;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #005999;
+        }
+
+        .link {
+            display: block;
+            margin-top: 15px;
+            text-align: center;
+            color: #003b95;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+        .flash-messages {
+            background: #ffdede;
+            color: #a10000;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            list-style: none;
+        }
+    </style>
+
+</head>
+
 <body>
+
+<header>
     <h1>Inloggen</h1>
-    <form method="POST">
-      <label>Rol:
-        <select name="rol">
-          <option value="student">Student</option>
-          <option value="huurder">Huurder</option>
-          <option value="kotbaas">Kotbaas</option>
-          <option value="admin">Admin</option>
-        </select>
-      </label><br>
+</header>
 
-      <div id="user-fields">
-        <label>Email: <input type="email" name="email"></label><br>
-        <span style="font-size: small; color: #888;">(Of gebruik naam als je geen e-mail hebt)</span><br>
-        <label>Naam: <input type="text" name="naam"></label><br>
-      </div>
+<div class="container">
+    <div class="card">
 
-      <div id="admin-fields" style="display:none;">
-        <label>Admin gebruiker: <input type="text" name="admin_username"></label><br>
-        <label>Wachtwoord: <input type="password" name="admin_password"></label><br>
-      </div>
+        <h2>Welkom terug</h2>
 
-      <button type="submit">Inloggen</button>
-    </form>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul class="flash-messages">
+              {% for message in messages %}
+                <li>{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
 
-    <script>
-    (function(){
-      function toggleLoginFields(sel){
-        var isAdmin = sel.value === 'admin';
-        var user = document.getElementById('user-fields');
-        var admin = document.getElementById('admin-fields');
-        if(user) user.style.display = isAdmin ? 'none' : 'block';
-        if(admin) admin.style.display = isAdmin ? 'block' : 'none';
-      }
-      document.addEventListener('DOMContentLoaded', function(){
-        var sel = document.querySelector('select[name="rol"]');
-        if(!sel) return;
-        toggleLoginFields(sel);
-        sel.addEventListener('change', function(){ toggleLoginFields(sel); });
-      });
-    })();
-    </script>
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul>
-          {% for message in messages %}
-            <li>{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
-    <a href="{{ url_for('register') }}">Registreer hier</a>
+        <form method="POST">
+
+            <label>Rol</label>
+            <select name="rol" id="rol-select">
+                <option value="student">Student</option>
+                <option value="huurder">Huurder</option>
+                <option value="kotbaas">Kotbaas</option>
+                <option value="admin">Admin</option>
+            </select>
+
+            <div id="user-fields">
+                <label>Email</label>
+                <input type="email" name="email">
+                <span style="font-size: 12px; color:#666;">(Of gebruik naam indien geen e-mail)</span>
+
+                <label>Naam</label>
+                <input type="text" name="naam">
+            </div>
+
+            <div id="admin-fields" style="display:none;">
+                <label>Admin gebruiker</label>
+                <input type="text" name="admin_username">
+
+                <label>Wachtwoord</label>
+                <input type="password" name="admin_password">
+            </div>
+
+            <button type="submit" class="btn">Inloggen</button>
+
+        </form>
+
+        <a class="link" href="{{ url_for('register') }}">Nog geen account? Registreer hier</a>
+    </div>
+</div>
+
+<script>
+(function(){
+  function toggleLoginFields(sel){
+    var isAdmin = sel.value === 'admin';
+    var user = document.getElementById('user-fields');
+    var admin = document.getElementById('admin-fields');
+    if(user) user.style.display = isAdmin ? 'none' : 'block';
+    if(admin) admin.style.display = isAdmin ? 'block' : 'none';
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var sel = document.getElementById('rol-select');
+    if(!sel) return;
+    toggleLoginFields(sel);
+    sel.addEventListener('change', function(){ toggleLoginFields(sel); });
+  });
+})();
+</script>
+
 </body>
 </html>
-
-

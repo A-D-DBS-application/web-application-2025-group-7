@@ -1,33 +1,92 @@
 {% extends 'dashboard_admin.html' %}
 {% block dashboard_content %}
-<h2>Alle koten</h2>
-<div style="margin-bottom:10px;">
-    <a href="{{ url_for('dashboard_admin_koten') }}"><button type="button">Ververs overzicht</button></a>
-</div>
-<p style="font-size:0.9rem; color:#555; margin-bottom:0;">
-    Toeristenbelasting wordt automatisch berekend aan een vast tarief van {{ "%.0f"|format(tourist_tax_rate * 100) }}% van de totale omzet.
-</p>
+
+<h2 style="color:#003b95; margin-top:0;">Alle koten</h2>
+
 <style>
-    .booking-table {
+    .action-bar {
+        margin-bottom: 15px;
+    }
+
+    .btn-primary {
+        background-color: #0071c2;
+        border: none;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .btn-primary:hover {
+        background-color: #005999;
+    }
+
+    /* Moderne tabel styling zoals andere pagina’s */
+    .kot-table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 1rem;
+        background: white;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+        font-size: 0.92rem;
     }
-    .booking-table th,
-    .booking-table td {
-        border: 1px solid #ddd;
-        padding: 0.5rem 0.75rem;
-        text-align: left;
+
+    .kot-table thead {
+        background-color: #eef3f8;
+    }
+
+    .kot-table th {
+        padding: 12px;
+        font-weight: bold;
+        color: #003b95;
+        border-bottom: 1px solid #d6d6d6;
         vertical-align: top;
     }
-    .booking-table th {
-        color: #0057b8;
+
+    .kot-table td {
+        padding: 12px;
+        border-bottom: 1px solid #e6e6e6;
+        color: #444;
+        vertical-align: top;
     }
-    .booking-table thead {
-        background-color: #f5f5f5;
+
+    .kot-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .kot-photo {
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+
+    .btn-small {
+        background: #0071c2;
+        border: none;
+        padding: 8px 14px;
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .btn-small:hover {
+        background: #005999;
     }
 </style>
-<table class="booking-table">
+
+<div class="action-bar">
+    <form action="{{ url_for('dashboard_admin_koten') }}" style="display:inline;">
+        <button type="submit" class="btn-primary">Ververs overzicht</button>
+    </form>
+</div>
+
+<p style="font-size:0.9rem; color:#555; margin-bottom:0;">
+    Toeristenbelasting wordt automatisch berekend aan een vast tarief van 
+    {{ "%.0f"|format(tourist_tax_rate * 100) }}% van de totale omzet.
+</p>
+
+<table class="kot-table">
     <thead>
         <tr>
             <th>Adres</th>
@@ -38,17 +97,19 @@
             <th>Beschrijving</th>
             <th>Omzet per nacht</th>
             <th>Totale omzet</th>
-            <th>EGW-kosten (deel van omzet)</th>
-            <th>Toeristenbelasting (tarief 6%)</th>
-            <th>Omzet na toeristenbelasting</th>
+            <th>EGW-kosten</th>
+            <th>Toeristenbelasting</th>
+            <th>Na belasting</th>
             <th>Bewerk</th>
         </tr>
     </thead>
+
     <tbody>
         {% for kot in koten %}
             <tr>
                 <td>{{ kot.adres }}</td>
                 <td>{{ kot.stad }}</td>
+
                 <td>
                     {% set eigenaar = None %}
                     {% if kot.kotbaas and kot.kotbaas.gebruiker %}
@@ -56,40 +117,59 @@
                     {% elif kot.student and kot.student.gebruiker %}
                         {% set eigenaar = kot.student.gebruiker %}
                     {% endif %}
+
                     {% if eigenaar %}
                         <strong>{{ eigenaar.naam }}</strong><br>
-                        <span style="font-size:0.95em;">Email: {{ eigenaar.email or "n.v.t." }}</span><br>
-                        <span style="font-size:0.95em;">Tel: {{ eigenaar.telefoon or "n.v.t." }}</span>
+                        <span>Email: {{ eigenaar.email or "n.v.t." }}</span><br>
+                        <span>Tel: {{ eigenaar.telefoon or "n.v.t." }}</span>
                     {% else %}
                         Onbekend
                     {% endif %}
                 </td>
+
                 <td>{{ kot.aantal_slaapplaatsen or 'n.v.t.' }}</td>
+
                 {% set stats = kot_statistieken.get(kot.kot_id) if kot_statistieken else None %}
+
                 <td>
                     {% if kot.foto %}
-                        <img src="{{ kot.foto }}" width="80">
+                        <img src="{{ kot.foto }}" width="80" class="kot-photo">
                     {% else %}
                         n.v.t.
                     {% endif %}
                 </td>
+
                 <td>{{ kot.beschrijving or 'n.v.t.' }}</td>
+
                 <td>€ {{ "%.2f"|format(stats.omzet_per_nacht if stats else 0) }}</td>
                 <td>€ {{ "%.2f"|format(stats.totale_omzet if stats else 0) }}</td>
+
                 {% set egw_share = stats.egw_aandeel_omzet if stats else 0 %}
                 {% set egw_month = stats.egw_per_maand if stats else (kot.egwkosten or 0) %}
                 {% set egw_night = stats.egw_per_nacht if stats else ((kot.egwkosten or 0) / 30 if (kot.egwkosten or 0) else 0) %}
+
                 <td>
-                    € {{ "%.2f"|format(egw_share) }} van omzet<br>
-                    <small>€ {{ "%.2f"|format(egw_month) }}/mnd · € {{ "%.2f"|format(egw_night) }}/nacht</small>
+                    € {{ "%.2f"|format(egw_share) }}<br>
+                    <small>
+                        € {{ "%.2f"|format(egw_month) }}/mnd ·
+                        € {{ "%.2f"|format(egw_night) }}/nacht
+                    </small>
                 </td>
+
                 {% set tax_amount = stats.toeristenbelasting if stats else 0 %}
-                {% set total_amount = stats.totale_omzet if stats else 0 %}
+
                 <td>€ {{ "%.2f"|format(tax_amount) }}</td>
+
                 <td>€ {{ "%.2f"|format(stats.omzet_na_belasting if stats else 0) }}</td>
-                <td><a href="{{ url_for('admin_kot_edit', kot_id=kot.kot_id) }}"><button>Bewerk</button></a></td>
+
+                <td>
+                    <a href="{{ url_for('admin_kot_edit', kot_id=kot.kot_id) }}">
+                        <button class="btn-small">Bewerk</button>
+                    </a>
+                </td>
             </tr>
         {% endfor %}
     </tbody>
 </table>
+
 {% endblock %}

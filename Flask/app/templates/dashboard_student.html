@@ -1,64 +1,154 @@
-<!-- Voeg rol-switcher toe -->
-{% if rollen|length > 1 %}
-<form method="post">
-    <label>Wissel dashboard:
-        <select name="switch_rol" onchange="this.form.submit();">
+<!doctype html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Dashboard</title>
+
+    <!-- BOOTSTRAP (CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f5f7fa;
+        }
+
+        /* BOOKING-STYLE KOT CARDS */
+        .kot-card {
+            border-radius: 14px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+
+        .kot-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+        }
+
+        .kot-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .kot-info {
+            padding: 15px 18px 20px 18px;
+        }
+
+        .kot-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .kot-location {
+            color: #6c757d;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .kot-price {
+            font-weight: 600;
+            font-size: 17px;
+            color: #0d6efd;
+            margin-top: 10px;
+        }
+
+    </style>
+</head>
+
+<body class="container mt-4">
+
+    <!-- ROL SWITCH -->
+    {% if rollen|length > 1 %}
+    <form method="post" class="mb-3">
+        <label class="form-label fw-bold">Wissel dashboard:</label>
+        <select class="form-select w-auto d-inline" name="switch_rol" onchange="this.form.submit();">
             {% for rolnaam in rollen %}
                 <option value="{{ rolnaam }}" {% if actieve_rol == rolnaam %}selected{% endif %}>
                     {{ rolnaam.title() }}
                 </option>
             {% endfor %}
         </select>
-    </label>
-</form>
-{% endif %}
-
-<!doctype html>
-<html>
-<head>
-    <title>Student Dashboard</title>
-</head>
-<body>
-    <h1>Welkom terug, {{ naam }}!</h1>
-
-    <form action="{{ url_for('add_kot') }}">
-        <button type="submit">Voeg een kot toe</button>
     </form>
+    {% endif %}
 
-    <h2>Mijn toegevoegde koten</h2>
-    <ul>
-        {% for kot in koten %}
-            <li>
-                <strong>{{ kot.adres }}, {{ kot.stad }}</strong><br>
-                Oppervlakte: {{ kot.oppervlakte }} m²<br>
-                Slaapplaatsen: {{ kot.aantal_slaapplaatsen }}<br>
-                Prijs: €{{ kot.maandhuurprijs }}/maand<br>
-                {% if kot.foto %}
-                    <img src="{{ kot.foto }}" alt="Foto van kot" style="max-width:200px; height:auto; display:block; margin:8px 0;">
-                {% endif %}
-                {% if kot.beschrijving %}
-                    <p>{{ kot.beschrijving }}</p>
-                {% endif %}
-                Kotbaas: {{ kot.kotbaas.gebruiker.naam if kot.kotbaas else "n.v.t." }}<br>
-                Initiatiefnemer: {{ kot.initiatiefnemer }}<br>
-                <form action="{{ url_for('verwijder_kot', kot_id=kot.kot_id) }}" method="post" style="display:inline;">
-                    <button type="submit" onclick="return confirm('Weet je zeker dat je dit kot wilt verwijderen?');">Verwijder</button>
-                </form>
+    <h1 class="mb-4">Welkom terug, {{ naam }} 👋</h1>
+
+    <a href="{{ url_for('add_kot') }}" class="btn btn-primary mb-4">+ Voeg een kot toe</a>
+
+
+    <!-- MIJN KOTEN -->
+    <h2 class="mt-4 mb-3">Mijn toegevoegde koten</h2>
+
+    {% if koten %}
+        <div class="row">
+            {% for kot in koten %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="kot-card">
+
+                    {% if kot.foto %}
+                        <img src="{{ kot.foto }}" alt="Kot foto">
+                    {% endif %}
+
+                    <div class="kot-info">
+
+                        <div class="kot-title">
+                            {{ kot.adres }}
+                        </div>
+
+                        <div class="kot-location">
+                            {{ kot.stad }}
+                        </div>
+
+                        <div class="kot-price">
+                            Vanaf €{{ kot.maandhuurprijs }} / maand
+                        </div>
+
+                        {% if kot.beschrijving %}
+                            <p class="mt-3">{{ kot.beschrijving }}</p>
+                        {% endif %}
+
+                        <p class="text-muted mt-2">
+                            Kotbaas: {{ kot.kotbaas.gebruiker.naam if kot.kotbaas else "Onbekend" }}
+                        </p>
+
+                        <form action="{{ url_for('verwijder_kot', kot_id=kot.kot_id) }}" method="post">
+                            <button class="btn btn-danger btn-sm mt-2"
+                                    onclick="return confirm('Weet je zeker dat je dit kot wilt verwijderen?');">
+                                Verwijder
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">Je hebt nog geen koten toegevoegd.</p>
+    {% endif %}
+
+
+    <!-- INBOX -->
+    <h2 class="mt-5 mb-3">Inbox</h2>
+    {% if inbox %}
+        <ul class="list-group">
+            {% for boeking in inbox %}
+            <li class="list-group-item">
+                <strong>{{ boeking.kot.adres }}</strong><br>
+                Van: {{ boeking.startdatum.strftime('%d-%m-%Y') }}
+                Tot: {{ boeking.einddatum.strftime('%d-%m-%Y') }}
+                <span class="badge bg-secondary">{{ boeking.status_boeking }}</span>
             </li>
-        {% else %}
-            <li>Je hebt nog geen koten toegevoegd.</li>
-        {% endfor %}
-    </ul>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">Geen boekingen ontvangen.</p>
+    {% endif %}
 
-    <h2>Inbox</h2>
-    <ul>
-        {% for boeking in inbox %}
-            <li>Kot: {{ boeking.kot.adres }}, Van: {{ boeking.startdatum }}, Tot: {{ boeking.einddatum }}, Status: {{ boeking.status_boeking }}</li>
-        {% else %}
-            <li>Geen boekingen ontvangen.</li>
-        {% endfor %}
-    </ul>
-
-    <a href="{{ url_for('logout') }}">Uitloggen</a>
+    <a class="btn btn-outline-secondary mt-4" href="{{ url_for('logout') }}">Uitloggen</a>
 </body>
 </html>

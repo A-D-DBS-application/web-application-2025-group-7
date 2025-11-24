@@ -1,124 +1,220 @@
 <!doctype html>
 <html>
 <head>
-    <title>Home / Koten Zoeken</title>
+    <title>Koten Zoeken</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #003b95;
+            color: white;
+            padding: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px 0;
+        }
+
+        /* Zoekbalk */
+        .filter-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+
+        .filter-box input[type=text],
+        .filter-box input[type=number],
+        .filter-box input[type=date] {
+            padding: 8px;
+            margin: 5px 0;
+            width: 200px;
+        }
+
+        .filter-box label {
+            margin-right: 10px;
+        }
+
+        .btn {
+            background-color: #0071c2;
+            color: white;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #005999;
+        }
+
+        /* BOOKING STYLE GRID */
+        .kot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        /* BOOKING STYLE CARD */
+        .kot-card {
+            background: #ffffff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: 0.2s ease;
+        }
+
+        .kot-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 22px rgba(0,0,0,0.15);
+        }
+
+        .kot-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .kot-info {
+            padding: 18px;
+        }
+
+        .kot-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0 0 6px 0;
+        }
+
+        .kot-location {
+            color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .kot-details {
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        .price-tag {
+            color: #0071c2;
+            font-weight: 700;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .book-btn {
+            display: inline-block;
+            margin-top: 12px;
+            background-color: #0071c2;
+            padding: 10px 16px;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+
+        .book-btn:hover {
+            background-color: #005999;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Overzicht beschikbare koten</h1>
-    <form method="get">
-        <input type="text" name="stad" placeholder="Stad" value="{{ filters.stad }}">
-        <input type="number" name="max_huur" placeholder="Max prijs per maand" value="{{ filters.max_huur }}" min="0">
-        <input type="number" name="min_oppervlakte" placeholder="Min. oppervlakte m²" value="{{ filters.min_oppervlakte }}" min="0">
-        <input type="number" name="aantal_slaapplaatsen" placeholder="Min. slaapplaatsen" value="{{ filters.aantal_slaapplaatsen }}" min="0">
-        <input type="number" step="0.01" name="max_egwkosten" placeholder="Max EGW-kosten" value="{{ filters.max_egwkosten }}" min="0">
 
-        <label>Startdatum</label>
-        <input type="date" name="startdatum" value="{{ filters.startdatum }}">
+<header>
+    <h1>Koten Zoeken</h1>
+</header>
 
-        <label>Einddatum</label>
-        <input type="date" name="einddatum" value="{{ filters.einddatum }}">
-        
-        <label>
-            <input type="checkbox" name="brandveiligheidsconformiteit" value="1" {% if filters.brandveiligheidsconformiteit == '1' %}checked{% endif %}>
-            Brandveilig conform
-        </label>
-        <label>
-            <input type="checkbox" name="eigen_keuken" value="1" {% if filters.eigen_keuken == '1' %}checked{% endif %}>
-            Eigen keuken
-        </label>
-        <label>
-            <input type="checkbox" name="eigen_sanitair" value="1" {% if filters.eigen_sanitair == '1' %}checked{% endif %}>
-            Eigen sanitair
-        </label>
-        <button type="submit">Filter toepassen</button>
-        <a href="{{ url_for('index') }}">Filters wissen</a>
-    </form>
+<div class="container">
 
-    <h2>Actieve filters:</h2>
-    <ul>
-        {% set actieve = [] %}
-        {% for fkey, fval in filters.items() if fval %}
-            {% set _ = actieve.append(1) %}
-            <li>
-                {{ fkey|replace('_', ' ') }}: {{ fval }}
-                <form method="get" style="display:inline">
-                    {% for other_key, other_val in filters.items() if other_key != fkey and other_val %}
-                        <input type="hidden" name="{{ other_key }}" value="{{ other_val }}">
-                    {% endfor %}
-                    <button type="submit" style="background:none;border:none;color:blue;text-decoration:underline;cursor:pointer;">verwijder</button>
-                </form>
-            </li>
-        {% endfor %}
-        {% if not actieve %}
-            <li>Geen actieve filters</li>
-        {% endif %}
-    </ul>
+    <!-- FILTERS -->
+    <div class="filter-box">
+        <form method="get">
+            <input type="text" name="stad" placeholder="Stad" value="{{ filters.stad }}">
+            <input type="number" name="max_huur" placeholder="Max huur (€)" value="{{ filters.max_huur }}">
+            <input type="number" name="min_oppervlakte" placeholder="Min m²" value="{{ filters.min_oppervlakte }}">
+            <input type="number" name="aantal_slaapplaatsen" placeholder="Slaapplaatsen" value="{{ filters.aantal_slaapplaatsen }}">
+            <input type="number" step="0.01" name="max_egwkosten" placeholder="Max EGW (€)" value="{{ filters.max_egwkosten }}">
 
+            <br><br>
 
+            <label>Startdatum:</label>
+            <input type="date" name="startdatum" value="{{ filters.startdatum }}">
+
+            <label>Einddatum:</label>
+            <input type="date" name="einddatum" value="{{ filters.einddatum }}">
+
+            <br><br>
+
+            <label><input type="checkbox" name="brandveiligheidsconformiteit" value="1" {% if filters.brandveiligheidsconformiteit == '1' %}checked{% endif %}> Brandveilig</label>
+            <label><input type="checkbox" name="eigen_keuken" value="1" {% if filters.eigen_keuken == '1' %}checked{% endif %}> Eigen keuken</label>
+            <label><input type="checkbox" name="eigen_sanitair" value="1" {% if filters.eigen_sanitair == '1' %}checked{% endif %}> Eigen sanitair</label>
+
+            <br><br>
+
+            <button class="btn" type="submit">Toepassen</button>
+            <a class="btn" href="{{ url_for('index') }}" style="background:#e0e0e0; color:black;">Wissen</a>
+        </form>
+    </div>
+
+    <!-- RESULTATEN -->
     {% if koten %}
-        <ul>
+    <div class="kot-grid">
         {% for kot in koten %}
-            <li>
-                {{ kot.adres }}, {{ kot.stad }}<br>
-                Oppervlakte: {{ kot.oppervlakte }} m²<br>
-                Slaapplaatsen: {{ kot.aantal_slaapplaatsen }}<br>
-                Prijs: €{{ kot.maandhuurprijs }}/maand, EGW: €{{ kot.egwkosten }}<br>
-                Brandveilig: {{ 'ja' if kot.brandveiligheidsconformiteit else 'nee' }},
-                Eigen keuken: {{ 'ja' if kot.eigen_keuken else 'nee' }},
-                Eigen sanitair: {{ 'ja' if kot.eigen_sanitair else 'nee' }}<br>
-                {% if kot.foto %}
-                    <img src="{{ kot.foto }}" alt="Foto van kot" style="max-width:200px; height:auto; display:block; margin:8px 0;">
-                {% endif %}
+        <div class="kot-card">
+
+            {% if kot.foto %}
+                <img src="{{ kot.foto }}" alt="Foto van kot">
+            {% else %}
+                <img src="https://via.placeholder.com/600x400?text=Geen+Foto" alt="Geen foto">
+            {% endif %}
+
+            <div class="kot-info">
+
+                <div class="kot-title">{{ kot.adres }}</div>
+                <div class="kot-location">{{ kot.stad }}</div>
+
+                <div class="kot-details">{{ kot.oppervlakte }} m² • {{ kot.aantal_slaapplaatsen }} slaapplaatsen</div>
+
+                <div class="price-tag">Vanaf €{{ kot.maandhuurprijs }}/maand</div>
+
                 {% if kot.beschrijving %}
-                    <p>{{ kot.beschrijving }}</p>
-                {% endif %}
-                
-                {% if session.get('rol') == 'admin' %}
-                    <div style="margin:8px 0; padding:8px; border:1px dashed #aaa;">
-                        <strong>Admin acties</strong>
-                        <div style="margin:6px 0;">
-                            <a href="{{ url_for('dashboard_admin_koten') }}"><button type="button">Terug naar admin overzicht</button></a>
-                        </div>
-                        <form method="post" action="{{ url_for('admin_update_description', kot_id=kot.kot_id) }}" style="margin-top:6px;">
-                            <label>Beschrijving toevoegen/bijwerken:</label><br>
-                            <textarea name="beschrijving" rows="3" style="width:100%;">{{ kot.beschrijving or '' }}</textarea>
-                            <button type="submit">Opslaan beschrijving</button>
-                        </form>
-                        <form method="post" action="{{ url_for('admin_update_photo', kot_id=kot.kot_id) }}" style="margin-top:6px;" enctype="multipart/form-data">
-                            <label>Foto-URL toevoegen/bijwerken:</label>
-                            <input type="text" name="foto" value="{{ kot.foto or '' }}" style="width:100%;">
-                            <div style="margin:6px 0;">
-                                <label>Of upload lokaal bestand:</label>
-                                <input type="file" name="foto_file" accept="image/*">
-                            </div>
-                            <button type="submit">Opslaan foto</button>
-                        </form>
-                    </div>
+                    <p style="margin-top:10px;">{{ kot.beschrijving }}</p>
                 {% endif %}
 
                 {% if kot.beschikbaarheden %}
-                {% for b in kot.beschikbaarheden %}
-                    Startdatum: {{ b.startdatum.strftime('%Y-%m-%d') }}<br>
-                    Einddatum: {{ b.einddatum.strftime('%Y-%m-%d') }}<br>
-                 {% endfor %}
-                {% else %}
-                    Geen beschikbaarheidsinformatie
+                    {% for b in kot.beschikbaarheden %}
+                        <p><strong>Beschikbaar:</strong> {{ b.startdatum.strftime('%Y-%m-%d') }} → {{ b.einddatum.strftime('%Y-%m-%d') }}</p>
+                    {% endfor %}
                 {% endif %}
-                <a href="{{ url_for('boek', kot_id=kot.kot_id) }}">Nu boeken</a>
-            </li>
+
+                <a class="book-btn" href="{{ url_for('boek', kot_id=kot.kot_id) }}">Nu boeken</a>
+            </div>
+        </div>
         {% endfor %}
-        </ul>
+    </div>
+
     {% else %}
-        <p style="color: red;"><strong>Geen koten gevonden die aan uw voorwaarden voldoen.</strong></p>
+        <p style="color:red; font-size:18px;">Geen koten gevonden.</p>
     {% endif %}
 
-    {% if session['gebruiker_id'] is defined or session.get('rol') == 'admin' %}
-        <a href="{{ url_for('logout') }}">Uitloggen</a>
-    {% else %}
-        <a href="{{ url_for('login') }}">Login</a> /
-        <a href="{{ url_for('register') }}">Registreer</a>
-    {% endif %}
+</div>
 
 </body>
 </html>
+
 
