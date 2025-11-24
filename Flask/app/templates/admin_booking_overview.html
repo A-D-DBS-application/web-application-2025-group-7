@@ -1,18 +1,30 @@
 {% extends 'dashboard_admin.html' %}
 {% block dashboard_content %}
 
-<h2 style="color:#003b95; margin-top:0;">Alle boekingen</h2>
+<h2 style="color:#003b95; margin-top:0; text-align:center;">Alle boekingen</h2>
+
+<div style="text-align:right; margin:10px 0 5px 0;">
+    <form action="{{ url_for('dashboard_admin') }}" method="get" style="display:inline-block;">
+        <button type="submit" class="btn-primary">Ververs overzicht</button>
+    </form>
+</div>
 
 <style>
     /* Tabel in moderne kaart-stijl */
+    .booking-wrapper { 
+        width: 100%;
+        margin: 0; /* kaart zelf centreert al via container */
+    }
     .booking-table {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
         margin-top: 1rem;
         background: white;
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        table-layout: auto;
     }
 
     .booking-table thead {
@@ -20,16 +32,18 @@
     }
 
     .booking-table th {
-        padding: 12px;
+        padding: 14px 18px;
         font-weight: bold;
         color: #003b95;
         border-bottom: 1px solid #d6d6d6;
+        white-space: nowrap;
     }
 
     .booking-table td {
-        padding: 12px;
+        padding: 14px 18px;
         border-bottom: 1px solid #e6e6e6;
         color: #444;
+        white-space: nowrap;
     }
 
     .booking-table tr:last-child td {
@@ -37,6 +51,7 @@
     }
 </style>
 
+<div class="booking-wrapper">
 <table class="booking-table">
     <thead>
         <tr>
@@ -101,6 +116,7 @@
             <tr><td colspan="8" style="text-align:center; padding:20px;">Geen boekingen gevonden.</td></tr>
         {% endfor %}
     </tbody>
-</table>
+ </table>
+</div>
 
 {% endblock %}
