@@ -5,6 +5,7 @@ import io
 from werkzeug.utils import secure_filename
 import os, time
 from sqlalchemy.orm import joinedload
+from sqlalchemy import or_, func
 from .models import Beschikbaarheid, db, Gebruiker, Student, Huurder, Kot, Boeking, Kotbaas
 from datetime import datetime, timedelta
 import weasyprint
@@ -561,20 +562,61 @@ def register_routes(app):
     def dashboard_admin():
         if 'rol' not in session or session['rol'] != 'admin':
             return redirect(url_for('login'))
-        boekingen = Boeking.query.all()
-        return render_template('admin_booking_overview.html', boekingen=boekingen)
+        zoekterm = request.args.get('zoekterm', '').strip()
+
+        boeking_query = Boeking.query \
+            .outerjoin(Huurder, Boeking.gebruiker_id == Huurder.gebruiker_id) \
+            .outerjoin(Gebruiker, Huurder.gebruiker_id == Gebruiker.gebruiker_id) \
+            .outerjoin(Kot, Boeking.kot_id == Kot.kot_id)
+
+        if zoekterm:
+            patroon = f"%{zoekterm.lower()}%"
+            boeking_query = boeking_query.filter(
+                or_(
+                    func.lower(Gebruiker.naam).like(patroon),
+                    func.lower(Gebruiker.email).like(patroon),
+                    func.lower(func.coalesce(Gebruiker.telefoon, '')).like(patroon),
+                    func.lower(Kot.adres).like(patroon),
+                    func.lower(Kot.stad).like(patroon),
+                    func.lower(Boeking.status_boeking).like(patroon)
+                )
+            )
+
+        boekingen = boeking_query.all()
+        return render_template('admin_booking_overview.html', boekingen=boekingen, zoekterm=zoekterm)
 
     @app.route('/dashboard_admin_koten')
     def dashboard_admin_koten():
         if 'rol' not in session or session['rol'] != 'admin':
             return redirect(url_for('login'))
-        koten = (
-            Kot.query.options(
-                joinedload(Kot.kotbaas).joinedload(Kotbaas.gebruiker),
-                joinedload(Kot.student).joinedload(Student.gebruiker),
-                joinedload(Kot.boekingen)
-            ).all()
+        zoekterm = request.args.get('zoekterm', '').strip()
+        kot_query = Kot.query.options(
+            joinedload(Kot.kotbaas).joinedload(Kotbaas.gebruiker),
+            joinedload(Kot.student).joinedload(Student.gebruiker),
+            joinedload(Kot.boekingen)
         )
+
+        if zoekterm:
+            patroon = zoekterm.lower()
+
+            def kot_match(kot):
+                velden = [
+                    kot.adres or '',
+                    kot.stad or '',
+                    kot.beschrijving or '',
+                ]
+                if kot.kotbaas and kot.kotbaas.gebruiker:
+                    velden.append(kot.kotbaas.gebruiker.naam or '')
+                    velden.append(kot.kotbaas.gebruiker.email or '')
+                if kot.student and kot.student.gebruiker:
+                    velden.append(kot.student.gebruiker.naam or '')
+                    velden.append(kot.student.gebruiker.email or '')
+                return any(patroon in veld.lower() for veld in velden)
+
+            alle_koten = kot_query.all()
+            koten = [k for k in alle_koten if kot_match(k)]
+        else:
+            koten = kot_query.all()
         kot_statistieken = {}
 
         for kot in koten:
@@ -606,7 +648,8 @@ def register_routes(app):
             'admin_kot_list.html',
             koten=koten,
             kot_statistieken=kot_statistieken,
-            tourist_tax_rate=DEFAULT_TOURIST_TAX_RATE
+            tourist_tax_rate=DEFAULT_TOURIST_TAX_RATE,
+            zoekterm=zoekterm
         )
 
     @app.route('/admin/kot/<int:kot_id>/edit', methods=['GET', 'POST'])

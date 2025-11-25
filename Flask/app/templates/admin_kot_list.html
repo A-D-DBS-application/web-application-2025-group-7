@@ -21,6 +21,20 @@
         background-color: #005999;
     }
 
+    .btn-secondary {
+        background: #e0e0e0;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        color: #003b95;
+    }
+
+    .btn-secondary:hover {
+        background: #d0d0d0;
+    }
+
     .btn-danger {
         background-color: #c62828;
         border: none;
@@ -141,7 +155,22 @@
     }
 </style>
 
-<div class="action-bar">
+<div class="action-bar" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+    <form action="{{ url_for('dashboard_admin_koten') }}" method="get" style="flex:1; display:flex; gap:10px;">
+        <input type="text"
+               name="zoekterm"
+               placeholder="Zoek op adres, eigenaar, stad, student..."
+               value="{{ zoekterm }}"
+               style="flex:1; padding:10px 14px; border-radius:10px; border:1px solid #cfd8ea;">
+        <button type="submit" class="btn-primary">Zoeken</button>
+        {% if zoekterm %}
+            <a href="{{ url_for('dashboard_admin_koten') }}"
+               class="btn-secondary"
+               style="text-decoration:none; display:flex; align-items:center; border:1px solid #ccc;">
+                Wissen
+            </a>
+        {% endif %}
+    </form>
     <form action="{{ url_for('dashboard_admin_koten') }}" style="display:inline;">
         <button type="submit" class="btn-primary">Ververs overzicht</button>
     </form>

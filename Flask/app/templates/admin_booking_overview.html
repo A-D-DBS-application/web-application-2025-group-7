@@ -3,12 +3,6 @@
 
 <h2 style="color:#003b95; margin-top:0; text-align:center;">Alle boekingen</h2>
 
-<div style="text-align:right; margin:10px 0 5px 0;">
-    <form action="{{ url_for('dashboard_admin') }}" method="get" style="display:inline-block;">
-        <button type="submit" class="btn-primary">Ververs overzicht</button>
-    </form>
-</div>
-
 <style>
     /* Tabel in moderne kaart-stijl */
     .booking-wrapper { 
@@ -118,7 +112,59 @@
         background: rgba(198,40,40,0.12);
         color: #9c1f1f;
     }
+
+    .search-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        margin: 15px 0;
+    }
+
+    .search-bar form {
+        display: flex;
+        gap: 10px;
+        flex: 1;
+    }
+
+    .search-bar input[type="text"] {
+        flex: 1;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid #cfd8ea;
+    }
+
+    .btn-secondary {
+        background: #e0e0e0;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        color: #003b95;
+    }
+
+    .btn-secondary:hover {
+        background: #d0d0d0;
+    }
 </style>
+
+<div class="search-bar">
+    <form action="{{ url_for('dashboard_admin') }}" method="get">
+        <input type="text"
+               name="zoekterm"
+               placeholder="Zoek op huurder, email, telefoon, adres, stad…"
+               value="{{ zoekterm }}">
+        <button type="submit" class="btn-primary">Zoeken</button>
+        {% if zoekterm %}
+            <a href="{{ url_for('dashboard_admin') }}" class="btn-secondary" style="text-decoration:none; display:flex; align-items:center;">Wissen</a>
+        {% endif %}
+    </form>
+    <form action="{{ url_for('dashboard_admin') }}" method="get">
+        <button type="submit" class="btn-primary" style="white-space:nowrap;">Ververs overzicht</button>
+    </form>
+</div>
 
 <div class="booking-wrapper">
 <table class="booking-table">

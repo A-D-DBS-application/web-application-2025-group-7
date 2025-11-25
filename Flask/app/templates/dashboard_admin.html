@@ -5,15 +5,10 @@
     <title>Gitoo Admin Dashboard</title>
 
     <style>
-        :root {
-            --dashboard-zoom: 1;
-        }
-
         body {
             font-family: Arial, sans-serif;
             background-color: #f5f7fa;
             margin: 0;
-            font-size: calc(16px * var(--dashboard-zoom));
         }
 
         header {
@@ -73,7 +68,6 @@
             width: 98%;
             max-width: 1900px; /* Verder verbreed zodat volledige tabel zichtbaar is zonder horizontaal scrollen */
             margin: 30px auto;
-            transition: font-size 0.2s ease;
         }
 
         /* Navigatie / knoppen */
@@ -114,6 +108,27 @@
             /* Geen horizontale scroll meer, container is nu breed genoeg */
         }
 
+        .zoom-surface {
+            width: 100%;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 10px 0;
+        }
+
+        .zoom-content {
+            transform-origin: top center;
+            transition: transform 0.1s ease-out;
+            display: inline-block;
+        }
+
+        .zoom-hint {
+            text-align: center;
+            color: #4f5a6d;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
 
         a.logout {
             display: inline-block;
@@ -127,47 +142,6 @@
             text-decoration: underline;
         }
 
-        .zoom-controls {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            background: white;
-            padding: 12px 18px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            margin: 0 auto 25px auto;
-            max-width: 360px;
-        }
-
-        .zoom-controls button {
-            background: #0071c2;
-            border: none;
-            color: #fff;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            font-size: 1rem;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .zoom-controls button:hover {
-            background: #005999;
-        }
-
-        .zoom-controls span {
-            font-weight: 700;
-            color: #003b95;
-            min-width: 60px;
-            text-align: center;
-        }
-
-        .zoom-controls .reset-btn {
-            width: auto;
-            border-radius: 20px;
-            padding: 0 14px;
-        }
     </style>
 </head>
 
@@ -194,16 +168,15 @@
         </form>
     </div>
 
-    <div class="zoom-controls">
-        <button type="button" onclick="adjustDashboardZoom(-0.1)">−</button>
-        <span id="zoomValue">100%</span>
-        <button type="button" onclick="adjustDashboardZoom(0.1)">+</button>
-        <button type="button" class="reset-btn" onclick="resetDashboardZoom()">Reset</button>
-    </div>
+    <p class="zoom-hint">Gebruik <strong>Ctrl + scroll</strong> of een pinch-beweging om de tabel te schalen.</p>
 
-    <!-- Dynamische content -->
-    <div class="content-card">
-        {% block dashboard_content %}{% endblock %}
+    <!-- Dynamische content met zoom -->
+    <div class="zoom-surface" id="adminZoomSurface">
+        <div class="zoom-content" id="adminZoomContent">
+            <div class="content-card">
+                {% block dashboard_content %}{% endblock %}
+            </div>
+        </div>
     </div>
 
     <a href="{{ url_for('logout') }}" class="logout">Uitloggen</a>
@@ -213,28 +186,59 @@
 </body>
 
 <script>
-    (function() {
-        let currentZoom = 1;
-        const minZoom = 0.7;
-        const maxZoom = 1.4;
-        const zoomValueEl = document.getElementById('zoomValue');
-
-        function updateZoomDisplay() {
-            zoomValueEl.textContent = Math.round(currentZoom * 100) + '%';
-            document.documentElement.style.setProperty('--dashboard-zoom', currentZoom);
+    document.addEventListener('DOMContentLoaded', function() {
+        const surface = document.getElementById('adminZoomSurface');
+        const content = document.getElementById('adminZoomContent');
+        if (!surface || !content) {
+            return;
         }
 
-        window.adjustDashboardZoom = function(delta) {
-            currentZoom = Math.min(maxZoom, Math.max(minZoom, currentZoom + delta));
-            updateZoomDisplay();
+        let currentScale = 1;
+        const minScale = 0.55;
+        const maxScale = 1.35;
+        const supportsZoomProp = 'zoom' in content.style;
+
+        const applyScale = () => {
+            if (supportsZoomProp) {
+                content.style.zoom = currentScale;
+                content.style.transform = 'scale(1)';
+            } else {
+                content.style.transform = `scale(${currentScale})`;
+            }
         };
 
-        window.resetDashboardZoom = function() {
-            currentZoom = 1;
-            updateZoomDisplay();
-        };
+        surface.addEventListener('wheel', (event) => {
+            if (!event.ctrlKey) {
+                return;
+            }
+            event.preventDefault();
+            const delta = -event.deltaY;
+            currentScale += delta * 0.0015;
+            currentScale = Math.min(maxScale, Math.max(minScale, currentScale));
+            applyScale();
+        }, { passive: false });
 
-        updateZoomDisplay();
-    })();
+        // Voor multitouch (Safari)
+        let gestureActive = false;
+        surface.addEventListener('gesturestart', (event) => {
+            gestureActive = true;
+            event.preventDefault();
+        }, { passive: false });
+
+        surface.addEventListener('gesturechange', (event) => {
+            if (!gestureActive) return;
+            event.preventDefault();
+            currentScale *= event.scale;
+            currentScale = Math.min(maxScale, Math.max(minScale, currentScale));
+            applyScale();
+        }, { passive: false });
+
+        surface.addEventListener('gestureend', () => {
+            gestureActive = false;
+        });
+
+        applyScale();
+    });
 </script>
+</html>
 </html>
