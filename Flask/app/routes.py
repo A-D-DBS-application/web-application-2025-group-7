@@ -1,11 +1,13 @@
 from operator import and_
 from warnings import filters
-from flask import render_template, request, redirect, url_for, session, flash
+from flask import render_template, request, redirect, url_for, session, flash, send_file
+import io
 from werkzeug.utils import secure_filename
 import os, time
 from sqlalchemy.orm import joinedload
 from .models import Beschikbaarheid, db, Gebruiker, Student, Huurder, Kot, Boeking, Kotbaas
 from datetime import datetime, timedelta
+import weasyprint
 
 DEFAULT_TOURIST_TAX_RATE = 0.06  # 6% standaardtoeslag op de totale omzet
 
@@ -650,6 +652,27 @@ def register_routes(app):
         db.session.commit()
         flash("Kot succesvol goedgekeurd en zichtbaar gemaakt.", "success")
         return redirect(url_for('dashboard_kotbaas'))
+    
+    @app.route('/generate_contract/<int:kot_id>')
+    def generate_contract(kot_id):
+        kot = Kot.query.get_or_404(kot_id)
+        contract_html = render_template('contract_template.html',
+            kotbaas_naam=kot.kotbaas.gebruiker.naam,
+            kotbaas_email=kot.kotbaas.gebruiker.email,
+            kotbaas_telefoon=kot.kotbaas.gebruiker.telefoon,
+            student_naam=kot.student.gebruiker.naam,
+            student_email=kot.student.gebruiker.email,
+            student_telefoon=kot.student.gebruiker.telefoon,
+            kot_adres=kot.adres,
+            kot_oppervlakte=kot.oppervlakte
+        )
+        pdf = weasyprint.HTML(string=contract_html).write_pdf()
+        return send_file(
+            io.BytesIO(pdf),
+            as_attachment=True,
+            download_name=f"Gitoo_Contract_{kot_id}.pdf",
+            mimetype='application/pdf'
+        )
 
 
     
