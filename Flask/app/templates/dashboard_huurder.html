@@ -45,6 +45,28 @@
             border-radius: 14px;
             box-shadow: 0 4px 14px rgba(0,0,0,0.1);
             margin-bottom: 25px;
+            border: 1px solid transparent;
+        }
+
+        .kot-card.cancelled {
+            background: #fff5f5;
+            border-color: #f3c0c0;
+        }
+
+        .status-chip {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-left: 8px;
+        }
+
+        .status-chip.cancelled {
+            background: rgba(198,40,40,0.12);
+            color: #9c1f1f;
         }
 
         h2 {
@@ -69,6 +91,30 @@
 
         .btn-primary:hover {
             background-color: #005999;
+        }
+
+        .btn-danger {
+            background-color: #c62828;
+            border: none;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-danger:hover {
+            background-color: #a71d1d;
+        }
+
+        .btn-danger:disabled {
+            background-color: #d6d6d6;
+            color: #777;
+            cursor: not-allowed;
+        }
+
+        .kot-card form {
+            margin-top: 18px;
         }
 
         a.logout {
@@ -119,15 +165,35 @@
     <h2>Mijn gehuurde koten</h2>
 
     {% for boeking in boekingen %}
-        <div class="kot-card">
+        {% set is_cancelled = boeking.status_boeking and 'geannuleerd' in boeking.status_boeking.lower() %}
+        <div class="kot-card {% if is_cancelled %}cancelled{% endif %}">
             <h3 style="margin-top:0;">{{ boeking.kot.adres }}, {{ boeking.kot.stad }}</h3>
 
             <p class="info-line">Oppervlakte: {{ boeking.kot.oppervlakte }} m²</p>
             <p class="info-line">Slaapplaatsen: {{ boeking.kot.aantal_slaapplaatsen }}</p>
             <p class="info-line"><strong>Prijs:</strong> €{{ boeking.kot.maandhuurprijs }}/maand</p>
-            <p class="info-line"><strong>Status:</strong> {{ boeking.status_boeking }}</p>
+            <p class="info-line">
+                <strong>Status:</strong> {{ boeking.status_boeking }}
+                {% if is_cancelled %}
+                    <span class="status-chip cancelled">Geannuleerd</span>
+                {% endif %}
+            </p>
             <p class="info-line"><strong>Startdatum:</strong> {{ boeking.startdatum.strftime('%d-%m-%Y') }}</p>
             <p class="info-line"><strong>Einddatum:</strong> {{ boeking.einddatum.strftime('%d-%m-%Y') }}</p>
+
+            <form action="{{ url_for('cancel_boeking', boeking_id=boeking.boeking_id) }}"
+                  method="post"
+                  onsubmit="return confirm('Weet je zeker dat je deze boeking wil annuleren?');">
+                <button type="submit" class="btn-danger" {% if is_cancelled %}disabled{% endif %}>
+                    {% if is_cancelled %}Reeds geannuleerd{% else %}Annuleer boeking{% endif %}
+                </button>
+            </form>
+
+            {% if is_cancelled %}
+                <p class="info-line" style="color:#8a1f1f; margin-top:10px;">
+                    Je annulering is doorgestuurd. De reservatie blijft als historiek zichtbaar.
+                </p>
+            {% endif %}
         </div>
     {% else %}
         <p class="info-line">Je hebt nog geen kot geboekt.</p>

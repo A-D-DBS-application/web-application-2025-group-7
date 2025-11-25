@@ -641,6 +641,55 @@ def register_routes(app):
             flash('Kot bijgewerkt.', 'success')
             return redirect(url_for('dashboard_admin_koten'))
         return render_template('admin_edit_kot.html', kot=kot)
+
+    @app.route('/admin/kot/<int:kot_id>/delete', methods=['POST'])
+    def admin_delete_kot(kot_id):
+        if session.get('rol') != 'admin':
+            flash('Geen toegang tot deze actie.', 'error')
+            return redirect(url_for('login'))
+        kot = Kot.query.get_or_404(kot_id)
+        for boeking in list(kot.boekingen):
+            db.session.delete(boeking)
+        for beschikbaarheid in list(kot.beschikbaarheden):
+            db.session.delete(beschikbaarheid)
+        db.session.delete(kot)
+        db.session.commit()
+        flash('Kot en gekoppelde boekingen verwijderd.', 'success')
+        return redirect(url_for('dashboard_admin_koten'))
+
+    @app.route('/admin/boeking/<int:boeking_id>/delete', methods=['POST'])
+    def admin_delete_boeking(boeking_id):
+        if session.get('rol') != 'admin':
+            flash('Geen toegang tot deze actie.', 'error')
+            return redirect(url_for('login'))
+        boeking = Boeking.query.get_or_404(boeking_id)
+        if boeking.status_boeking and 'geannuleerd' in boeking.status_boeking.lower():
+            flash('Deze boeking was al geannuleerd.', 'info')
+            return redirect(url_for('dashboard_admin'))
+        boeking.status_boeking = 'geannuleerd'
+        db.session.commit()
+        flash('Boeking gemarkeerd als geannuleerd.', 'success')
+        return redirect(url_for('dashboard_admin'))
+
+    @app.route('/boeking/<int:boeking_id>/cancel', methods=['POST'])
+    def cancel_boeking(boeking_id):
+        if 'gebruiker_id' not in session:
+            return redirect(url_for('login'))
+        gebruiker = Gebruiker.query.get(session['gebruiker_id'])
+        if not gebruiker or not gebruiker.huurder:
+            flash('Deze actie is alleen voor huurders.', 'error')
+            return redirect(url_for('dashboard'))
+        boeking = Boeking.query.get_or_404(boeking_id)
+        if boeking.gebruiker_id != gebruiker.huurder.gebruiker_id:
+            flash('Je kan enkel je eigen boekingen annuleren.', 'error')
+            return redirect(url_for('dashboard'))
+        if boeking.status_boeking and 'geannuleerd' in boeking.status_boeking.lower():
+            flash('Deze boeking was al geannuleerd.', 'info')
+            return redirect(url_for('dashboard'))
+        boeking.status_boeking = 'geannuleerd'
+        db.session.commit()
+        flash('Boeking succesvol geannuleerd.', 'success')
+        return redirect(url_for('dashboard'))
     
     @app.route('/approve_kot/<int:kot_id>', methods=['POST']) # Kotbaas moet kot eerst goedkeuren
     def approve_kot(kot_id):

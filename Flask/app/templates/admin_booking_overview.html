@@ -65,6 +65,59 @@
     .booking-table tr:last-child td {
         border-bottom: none;
     }
+
+    .booking-table tbody tr.cancelled {
+        background: #fff5f5;
+    }
+
+    .booking-table tbody tr.cancelled td {
+        color: #8a1f1f;
+    }
+
+    .booking-table td.actions {
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .btn-danger-small {
+        background: #c62828;
+        border: none;
+        color: #fff;
+        padding: 8px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .btn-danger-small:hover {
+        background: #a71d1d;
+    }
+
+    .btn-danger-small:disabled {
+        background: #d6d6d6;
+        color: #777;
+        cursor: not-allowed;
+    }
+
+    .actions form {
+        margin: 0;
+    }
+
+    .status-chip {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-left: 8px;
+    }
+
+    .status-chip.cancelled {
+        background: rgba(198,40,40,0.12);
+        color: #9c1f1f;
+    }
 </style>
 
 <div class="booking-wrapper">
@@ -79,6 +132,7 @@
             <th>Voorkeuren/Opmerkingen</th>
             <th>Status</th>
             <th>Periode</th>
+            <th>Acties</th>
         </tr>
     </thead>
 
@@ -86,8 +140,9 @@
         {% for boeking in boekingen %}
             {% set huurder = boeking.huurder if boeking.huurder else None %}
             {% set gebruiker = boeking.huurder.gebruiker if boeking.huurder else None %}
+            {% set is_cancelled = boeking.status_boeking and 'geannuleerd' in boeking.status_boeking.lower() %}
 
-            <tr>
+            <tr class="{% if is_cancelled %}cancelled{% endif %}">
                 <td>{{ gebruiker.naam if gebruiker else 'n.v.t.' }}</td>
                 <td>{{ gebruiker.email if gebruiker else 'n.v.t.' }}</td>
 
@@ -106,7 +161,12 @@
 
                 <td>{{ boeking.aantal_personen }}</td>
                 <td>{{ huurder.voorkeuren if huurder and huurder.voorkeuren else 'n.v.t.' }}</td>
-                <td>{{ boeking.status_boeking }}</td>
+                <td>
+                    {{ boeking.status_boeking }}
+                    {% if is_cancelled %}
+                        <span class="status-chip cancelled">Geannuleerd</span>
+                    {% endif %}
+                </td>
 
                 {% set start = boeking.startdatum %}
                 {% set eind = boeking.einddatum %}
@@ -126,10 +186,21 @@
                         n.v.t.
                     {% endif %}
                 </td>
+                <td class="actions">
+                    <form action="{{ url_for('admin_delete_boeking', boeking_id=boeking.boeking_id) }}"
+                          method="post"
+                          onsubmit="return confirm('Boeking annuleren?');">
+                        <button type="submit"
+                                class="btn-danger-small"
+                                {% if is_cancelled %}disabled{% endif %}>
+                            {% if is_cancelled %}Geannuleerd{% else %}Annuleer{% endif %}
+                        </button>
+                    </form>
+                </td>
             </tr>
 
         {% else %}
-            <tr><td colspan="8" style="text-align:center; padding:20px;">Geen boekingen gevonden.</td></tr>
+            <tr><td colspan="9" style="text-align:center; padding:20px;">Geen boekingen gevonden.</td></tr>
         {% endfor %}
     </tbody>
  </table>

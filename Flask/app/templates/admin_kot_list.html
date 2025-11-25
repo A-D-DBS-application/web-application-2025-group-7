@@ -21,6 +21,19 @@
         background-color: #005999;
     }
 
+    .btn-danger {
+        background-color: #c62828;
+        border: none;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .btn-danger:hover {
+        background-color: #a71d1d;
+    }
+
     .table-scroll {
         width: 100%;
         overflow-x: auto;
@@ -107,6 +120,25 @@
     .btn-small:hover {
         background: #005999;
     }
+
+    .btn-small.danger {
+        background: #c62828;
+    }
+
+    .btn-small.danger:hover {
+        background: #a71d1d;
+    }
+
+    .action-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 120px;
+    }
+
+    .action-cell form {
+        margin: 0;
+    }
 </style>
 
 <div class="action-bar">
@@ -135,7 +167,7 @@
                 <th class="numeric">EGW-kosten</th>
                 <th class="numeric">Toeristenbelasting</th>
                 <th class="numeric">Na belasting</th>
-                <th>Bewerk</th>
+                <th>Acties</th>
             </tr>
         </thead>
 
@@ -197,10 +229,15 @@
 
                     <td class="numeric">&euro;{{ "%.2f"|format(stats.omzet_na_belasting if stats else 0) }}</td>
 
-                    <td>
+                    <td class="action-cell">
                         <a href="{{ url_for('admin_kot_edit', kot_id=kot.kot_id) }}">
                             <button class="btn-small">Bewerk</button>
                         </a>
+                        <form action="{{ url_for('admin_delete_kot', kot_id=kot.kot_id) }}"
+                              method="post"
+                              onsubmit="return confirm('Weet je zeker dat je dit kot en alle boekingen wil verwijderen?');">
+                            <button type="submit" class="btn-small danger">Verwijder</button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}
