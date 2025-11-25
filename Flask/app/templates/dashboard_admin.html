@@ -5,23 +5,75 @@
     <title>Gitoo Admin Dashboard</title>
 
     <style>
+        :root {
+            --dashboard-zoom: 1;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background-color: #f5f7fa;
             margin: 0;
+            font-size: calc(16px * var(--dashboard-zoom));
         }
 
         header {
             background-color: #003b95;
             padding: 20px;
             color: white;
-            text-align: center;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:20px;
+        }
+
+        .logo-badge {
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            padding:6px 14px;
+            border-radius:14px;
+            background:rgba(255,255,255,0.95);
+            box-shadow:0 6px 20px rgba(0,0,0,0.25);
+            min-width:130px;
+        }
+
+        .logo-badge img {
+            height:60px;
+            display:block;
+        }
+
+        .site-title {
+            flex:1;
+            text-align:center;
+            margin:0;
+        }
+
+        .header-spacer {
+            width:130px;
+        }
+
+        @media (max-width: 640px) {
+            header {
+                flex-direction: column;
+            }
+            .logo-badge,
+            .header-spacer {
+                width:100%;
+                justify-content:center;
+            }
+            .site-title {
+                text-align:center;
+            }
+            .header-spacer {
+                display:none;
+            }
         }
 
         .container {
             width: 98%;
             max-width: 1900px; /* Verder verbreed zodat volledige tabel zichtbaar is zonder horizontaal scrollen */
             margin: 30px auto;
+            transition: font-size 0.2s ease;
         }
 
         /* Navigatie / knoppen */
@@ -74,13 +126,60 @@
         a.logout:hover {
             text-decoration: underline;
         }
+
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: white;
+            padding: 12px 18px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            margin: 0 auto 25px auto;
+            max-width: 360px;
+        }
+
+        .zoom-controls button {
+            background: #0071c2;
+            border: none;
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .zoom-controls button:hover {
+            background: #005999;
+        }
+
+        .zoom-controls span {
+            font-weight: 700;
+            color: #003b95;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .zoom-controls .reset-btn {
+            width: auto;
+            border-radius: 20px;
+            padding: 0 14px;
+        }
     </style>
 </head>
 
 <body>
 
 <header>
-    <h1>Gitoo Admin Dashboard</h1>
+    <div class="logo-badge">
+        <img src="{{ url_for('static', filename='uploads/logo_gitoo_transparant.png') }}"
+            alt="Gitoo logo">
+    </div>
+    <h1 class="site-title">Gitoo Admin Dashboard</h1>
+    <div class="header-spacer"></div>
 </header>
 
 <div class="container">
@@ -95,6 +194,13 @@
         </form>
     </div>
 
+    <div class="zoom-controls">
+        <button type="button" onclick="adjustDashboardZoom(-0.1)">−</button>
+        <span id="zoomValue">100%</span>
+        <button type="button" onclick="adjustDashboardZoom(0.1)">+</button>
+        <button type="button" class="reset-btn" onclick="resetDashboardZoom()">Reset</button>
+    </div>
+
     <!-- Dynamische content -->
     <div class="content-card">
         {% block dashboard_content %}{% endblock %}
@@ -105,5 +211,30 @@
 </div>
 
 </body>
-</html>
 
+<script>
+    (function() {
+        let currentZoom = 1;
+        const minZoom = 0.7;
+        const maxZoom = 1.4;
+        const zoomValueEl = document.getElementById('zoomValue');
+
+        function updateZoomDisplay() {
+            zoomValueEl.textContent = Math.round(currentZoom * 100) + '%';
+            document.documentElement.style.setProperty('--dashboard-zoom', currentZoom);
+        }
+
+        window.adjustDashboardZoom = function(delta) {
+            currentZoom = Math.min(maxZoom, Math.max(minZoom, currentZoom + delta));
+            updateZoomDisplay();
+        };
+
+        window.resetDashboardZoom = function() {
+            currentZoom = 1;
+            updateZoomDisplay();
+        };
+
+        updateZoomDisplay();
+    })();
+</script>
+</html>

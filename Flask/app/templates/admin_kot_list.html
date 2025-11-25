@@ -21,39 +21,73 @@
         background-color: #005999;
     }
 
+    .table-scroll {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 16px;
+        padding-bottom: 8px;
+    }
+
     /* Moderne tabel styling zoals andere pagina’s */
     .kot-table {
         width: 100%;
-        border-collapse: collapse;
+        min-width: 1250px;
+        border-collapse: separate;
+        border-spacing: 0;
         margin-top: 1rem;
         background: white;
-        border-radius: 14px;
+        border-radius: 16px;
         overflow: hidden;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+        box-shadow: 0 25px 40px rgba(0,0,0,0.08);
         font-size: 0.92rem;
+        border: 1px solid rgba(0,59,149,0.12);
     }
 
     .kot-table thead {
-        background-color: #eef3f8;
+        background: linear-gradient(135deg, #f0f6ff, #dfe9ff);
     }
 
     .kot-table th {
-        padding: 12px;
-        font-weight: bold;
-        color: #003b95;
-        border-bottom: 1px solid #d6d6d6;
+        padding: 14px 16px;
+        font-weight: 700;
+        color: #002a70;
+        border-bottom: 1px solid rgba(0,59,149,0.15);
         vertical-align: top;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-size: 0.82rem;
     }
 
     .kot-table td {
-        padding: 12px;
+        padding: 14px 16px;
         border-bottom: 1px solid #e6e6e6;
-        color: #444;
+        color: #2f2f2f;
         vertical-align: top;
+    }
+
+    .kot-table tbody tr:nth-child(even) {
+        background: #f9fbff;
+    }
+
+    .kot-table tbody tr:hover {
+        background: #eef5ff;
     }
 
     .kot-table tr:last-child td {
         border-bottom: none;
+    }
+
+    .kot-table th.numeric,
+    .kot-table td.numeric {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .kot-table td.numeric small {
+        display: block;
+        text-align: right;
+        color: #5c6b80;
     }
 
     .kot-photo {
@@ -86,90 +120,92 @@
     {{ "%.0f"|format(tourist_tax_rate * 100) }}% van de totale omzet.
 </p>
 
-<table class="kot-table">
-    <thead>
-        <tr>
-            <th>Adres</th>
-            <th>Stad</th>
-            <th>Eigenaar</th>
-            <th>Capaciteit</th>
-            <th>Foto</th>
-            <th>Beschrijving</th>
-            <th>Omzet per nacht</th>
-            <th>Totale omzet</th>
-            <th>EGW-kosten</th>
-            <th>Toeristenbelasting</th>
-            <th>Na belasting</th>
-            <th>Bewerk</th>
-        </tr>
-    </thead>
-
-    <tbody>
-        {% for kot in koten %}
+<div class="table-scroll">
+    <table class="kot-table">
+        <thead>
             <tr>
-                <td>{{ kot.adres }}</td>
-                <td>{{ kot.stad }}</td>
-
-                <td>
-                    {% set eigenaar = None %}
-                    {% if kot.kotbaas and kot.kotbaas.gebruiker %}
-                        {% set eigenaar = kot.kotbaas.gebruiker %}
-                    {% elif kot.student and kot.student.gebruiker %}
-                        {% set eigenaar = kot.student.gebruiker %}
-                    {% endif %}
-
-                    {% if eigenaar %}
-                        <strong>{{ eigenaar.naam }}</strong><br>
-                        <span>Email: {{ eigenaar.email or "n.v.t." }}</span><br>
-                        <span>Tel: {{ eigenaar.telefoon or "n.v.t." }}</span>
-                    {% else %}
-                        Onbekend
-                    {% endif %}
-                </td>
-
-                <td>{{ kot.aantal_slaapplaatsen or 'n.v.t.' }}</td>
-
-                {% set stats = kot_statistieken.get(kot.kot_id) if kot_statistieken else None %}
-
-                <td>
-                    {% if kot.foto %}
-                        <img src="{{ kot.foto }}" width="80" class="kot-photo">
-                    {% else %}
-                        n.v.t.
-                    {% endif %}
-                </td>
-
-                <td>{{ kot.beschrijving or 'n.v.t.' }}</td>
-
-                <td>€ {{ "%.2f"|format(stats.omzet_per_nacht if stats else 0) }}</td>
-                <td>€ {{ "%.2f"|format(stats.totale_omzet if stats else 0) }}</td>
-
-                {% set egw_share = stats.egw_aandeel_omzet if stats else 0 %}
-                {% set egw_month = stats.egw_per_maand if stats else (kot.egwkosten or 0) %}
-                {% set egw_night = stats.egw_per_nacht if stats else ((kot.egwkosten or 0) / 30 if (kot.egwkosten or 0) else 0) %}
-
-                <td>
-                    € {{ "%.2f"|format(egw_share) }}<br>
-                    <small>
-                        € {{ "%.2f"|format(egw_month) }} / maand<br>
-                        € {{ "%.2f"|format(egw_night) }} / nacht
-                    </small>
-                </td>
-
-                {% set tax_amount = stats.toeristenbelasting if stats else 0 %}
-
-                <td>€ {{ "%.2f"|format(tax_amount) }}</td>
-
-                <td>€ {{ "%.2f"|format(stats.omzet_na_belasting if stats else 0) }}</td>
-
-                <td>
-                    <a href="{{ url_for('admin_kot_edit', kot_id=kot.kot_id) }}">
-                        <button class="btn-small">Bewerk</button>
-                    </a>
-                </td>
+                <th>Adres</th>
+                <th>Stad</th>
+                <th>Eigenaar</th>
+                <th>Capaciteit</th>
+                <th>Foto</th>
+                <th>Beschrijving</th>
+                <th class="numeric">Omzet per nacht</th>
+                <th class="numeric">Totale omzet</th>
+                <th class="numeric">EGW-kosten</th>
+                <th class="numeric">Toeristenbelasting</th>
+                <th class="numeric">Na belasting</th>
+                <th>Bewerk</th>
             </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        </thead>
+
+        <tbody>
+            {% for kot in koten %}
+                <tr>
+                    <td>{{ kot.adres }}</td>
+                    <td>{{ kot.stad }}</td>
+
+                    <td>
+                        {% set eigenaar = None %}
+                        {% if kot.kotbaas and kot.kotbaas.gebruiker %}
+                            {% set eigenaar = kot.kotbaas.gebruiker %}
+                        {% elif kot.student and kot.student.gebruiker %}
+                            {% set eigenaar = kot.student.gebruiker %}
+                        {% endif %}
+
+                        {% if eigenaar %}
+                            <strong>{{ eigenaar.naam }}</strong><br>
+                            <span>Email: {{ eigenaar.email or "n.v.t." }}</span><br>
+                            <span>Tel: {{ eigenaar.telefoon or "n.v.t." }}</span>
+                        {% else %}
+                            Onbekend
+                        {% endif %}
+                    </td>
+
+                    <td>{{ kot.aantal_slaapplaatsen or 'n.v.t.' }}</td>
+
+                    {% set stats = kot_statistieken.get(kot.kot_id) if kot_statistieken else None %}
+
+                    <td>
+                        {% if kot.foto %}
+                            <img src="{{ kot.foto }}" width="80" class="kot-photo">
+                        {% else %}
+                            n.v.t.
+                        {% endif %}
+                    </td>
+
+                    <td>{{ kot.beschrijving or 'n.v.t.' }}</td>
+
+                    <td class="numeric">&euro;{{ "%.2f"|format(stats.omzet_per_nacht if stats else 0) }}</td>
+                    <td class="numeric">&euro;{{ "%.2f"|format(stats.totale_omzet if stats else 0) }}</td>
+
+                    {% set egw_share = stats.egw_aandeel_omzet if stats else 0 %}
+                    {% set egw_month = stats.egw_per_maand if stats else (kot.egwkosten or 0) %}
+                    {% set egw_night = stats.egw_per_nacht if stats else ((kot.egwkosten or 0) / 30 if (kot.egwkosten or 0) else 0) %}
+
+                    <td class="numeric">
+                        &euro;{{ "%.2f"|format(egw_share) }}
+                        <small>
+                            &euro;{{ "%.2f"|format(egw_month) }} / maand<br>
+                            &euro;{{ "%.2f"|format(egw_night) }} / nacht
+                        </small>
+                    </td>
+
+                    {% set tax_amount = stats.toeristenbelasting if stats else 0 %}
+
+                    <td class="numeric">&euro;{{ "%.2f"|format(tax_amount) }}</td>
+
+                    <td class="numeric">&euro;{{ "%.2f"|format(stats.omzet_na_belasting if stats else 0) }}</td>
+
+                    <td>
+                        <a href="{{ url_for('admin_kot_edit', kot_id=kot.kot_id) }}">
+                            <button class="btn-small">Bewerk</button>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
 {% endblock %}

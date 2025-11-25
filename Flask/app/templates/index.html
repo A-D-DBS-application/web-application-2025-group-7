@@ -23,6 +23,27 @@
             margin: 0;
         }
 
+        .logo-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .logo-badge img {
+            height: 58px;
+            display: block;
+        }
+
+        .site-title {
+            flex: 1;
+            text-align: center;
+            margin: 0;
+        }
+
         .container {
             width: 90%;
             max-width: 1200px;
@@ -153,13 +174,11 @@
 <body>
 
 <header>
-    <div style="background:#003b95; border-radius:8px; display:inline-block; padding:4px;">
-    <img src="{{ url_for('static', filename='uploads/logo_gitoo_transparant.png') }}"
-        alt="Gitoo logo"
-        style="height: 46px; margin-right: 18px; background:#003b95;">
+    <div class="logo-badge">
+        <img src="{{ url_for('static', filename='uploads/logo_gitoo_transparant.png') }}"
+            alt="Gitoo logo">
     </div>
-        <h1>Koten Zoeken</h1>
-    </div>
+    <h1 class="site-title">Koten Zoeken</h1>
     <div class="auth-links">
         {% if session.get('gebruiker_id') or session.get('rol') == 'admin' %}
             <a href="{{ url_for('logout') }}">Uitloggen</a>
@@ -246,5 +265,3 @@
 
 </body>
 </html>
-
-
