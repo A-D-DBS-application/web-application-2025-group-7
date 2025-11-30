@@ -1,0 +1,19 @@
+<h2>Kot succesvol toegevoegd!</h2>
+
+{% if aanrader %}
+<p>
+    Op basis van gelijkaardige koten raden wij een maandhuurprijs aan van:
+</p>
+
+<h1 style="color: green;">
+    € {{ aanrader }}
+</h1>
+
+<p style="color: #555; font-size: 14px;">
+    Gebaseerd op oppervlakte, aantal slaapplaatsen en recente verhuurhistoriek.
+</p>
+{% else %}
+<p>Er zijn geen gelijkaardige koten gevonden om een prijsadvies te geven.</p>
+{% endif %}
+
+<a href="{{ url_for('dashboard') }}">Terug naar mijn dashboard</a>
