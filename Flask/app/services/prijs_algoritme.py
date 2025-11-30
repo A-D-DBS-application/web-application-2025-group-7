@@ -1,39 +1,52 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+from sqlalchemy import func
+from app.models import Kot, Boeking
 
-def bereken_aangeraden_prijs(nieuw_kot, vergelijkbare_koten):
+def bereken_aangeraden_prijs(oppervlakte, slaapplaatsen, stad=None):
     """
-    nieuw_kot: het kot dat net wordt toegevoegd
-    vergelijkbare_koten: lijst met Kot-objecten
+    Berekent een aanbevolen maandhuurprijs op basis van vergelijkbare koten.
+    - vergelijkbaar = oppervlakte ±10%, zelfde aantal slaapplaatsen, optioneel zelfde stad
+    - houdt rekening met verhuuractiviteit: koten die lang leeg staan drukken advies omlaag
+    - verandert NOOIT prijzen van koten zelf
     """
+    lower_area = int(oppervlakte * 0.9)
+    upper_area = int(oppervlakte * 1.1)
 
+    vergelijkbaar_query = Kot.query.filter(
+        Kot.oppervlakte.between(lower_area, upper_area),
+        Kot.aantal_slaapplaatsen == slaapplaatsen,
+        Kot.maandhuurprijs.isnot(None)
+    )
+
+    if stad:
+        vergelijkbaar_query = vergelijkbaar_query.filter(Kot.stad.ilike(f"%{stad}%"))
+
+    vergelijkbare_koten = vergelijkbaar_query.all()
     if not vergelijkbare_koten:
         return None
 
-    prijzen = []
+    gemiddelde_prijs = vergelijkbaar_query.with_entities(func.avg(Kot.maandhuurprijs)).scalar()
+    if gemiddelde_prijs is None:
+        return None
 
-    for kot in vergelijkbare_koten:
-        prijs = kot.maandhuurprijs
+    gemiddelde_prijs = float(gemiddelde_prijs)
 
-        # 1. check hoe lang het kot niet verhuurd is
-        laatste_einddatum = None
+    # Controle verhuuractiviteit
+    cutoff = datetime.now() - timedelta(days=180)  # 6 maanden
+    recent_gehuurd = 0
+    totaal = len(vergelijkbare_koten)
 
-        for b in kot.beschikbaarheden:
-            if laatste_einddatum is None or b.einddatum > laatste_einddatum:
-                laatste_einddatum = b.einddatum
+    for k in vergelijkbare_koten:
+        laatste_boeking = Boeking.query.filter_by(kot_id=k.kot_id).order_by(Boeking.einddatum.desc()).first()
+        if laatste_boeking and laatste_boeking.einddatum and laatste_boeking.einddatum >= cutoff:
+            recent_gehuurd += 1
 
-        # 2. Als laatste verhuurperiode lang geleden is → slimmer afprijzen
-        if laatste_einddatum:
-            dagen_geen_huur = (datetime.now().date() - laatste_einddatum).days
+    percentage_recent = recent_gehuurd / totaal if totaal > 0 else 1
 
-            if dagen_geen_huur > 60:
-                prijs *= 0.90   # 10% daling
+    # Indien veel koten lang stil staan → advies omlaag
+    if percentage_recent < 0.5:
+        aanbevolen = gemiddelde_prijs * 0.90
+    else:
+        aanbevolen = gemiddelde_prijs
 
-            if dagen_geen_huur > 120:
-                prijs *= 0.80   # 20% daling
-
-        prijzen.append(prijs)
-
-    # 3. gemiddelde prijs nemen
-    gemiddelde = sum(prijzen) / len(prijzen)
-
-    return round(gemiddelde, 2)
+    return round(aanbevolen, 2)

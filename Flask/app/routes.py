@@ -9,8 +9,61 @@ from sqlalchemy import or_, func
 from .models import Beschikbaarheid, db, Gebruiker, Student, Huurder, Kot, Boeking, Kotbaas
 from datetime import datetime, timedelta
 # import weasyprint
-from app.services.prijs_algoritme import bereken_aangeraden_prijs
-from app.models import Kot  # indien nog niet toegevoegd
+
+#Algoritme voor prijsadvies
+from datetime import datetime, timedelta
+from sqlalchemy import func
+from app.models import Kot, Boeking
+
+def bereken_aangeraden_prijs(oppervlakte, slaapplaatsen, stad=None):
+    """
+    Berekent een aanbevolen maandhuurprijs op basis van vergelijkbare koten.
+    - vergelijkbaar = oppervlakte ±10%, zelfde aantal slaapplaatsen, optioneel zelfde stad
+    - houdt rekening met verhuuractiviteit: koten die lang leeg staan drukken advies omlaag
+    - verandert NOOIT prijzen van koten zelf
+    """
+    lower_area = int(oppervlakte * 0.9)
+    upper_area = int(oppervlakte * 1.1)
+
+    vergelijkbaar_query = Kot.query.filter(
+        Kot.oppervlakte.between(lower_area, upper_area),
+        Kot.aantal_slaapplaatsen == slaapplaatsen,
+        Kot.maandhuurprijs.isnot(None)
+    )
+
+    if stad:
+        vergelijkbaar_query = vergelijkbaar_query.filter(Kot.stad.ilike(f"%{stad}%"))
+
+    vergelijkbare_koten = vergelijkbaar_query.all()
+    if not vergelijkbare_koten:
+        return None  # geen advies mogelijk
+
+    gemiddelde_prijs = vergelijkbaar_query.with_entities(func.avg(Kot.maandhuurprijs)).scalar()
+    if gemiddelde_prijs is None:
+        return None
+
+    gemiddelde_prijs = float(gemiddelde_prijs)
+
+    # Controle verhuuractiviteit
+    cutoff = datetime.now() - timedelta(days=180)  # 6 maanden
+    recent_gehuurd = 0
+    totaal = len(vergelijkbare_koten)
+
+    for k in vergelijkbare_koten:
+        laatste = Boeking.query.filter_by(kot_id=k.kot_id).order_by(Boeking.einddatum.desc()).first()
+        if laatste and laatste.einddatum and laatste.einddatum >= cutoff:
+            recent_gehuurd += 1
+
+    percentage_recent = recent_gehuurd / totaal if totaal > 0 else 1
+
+    # Indien veel koten lang stil staan → advies omlaag
+    if percentage_recent < 0.5:
+        aanbevolen = gemiddelde_prijs * 0.90
+    else:
+        aanbevolen = gemiddelde_prijs
+
+    return round(aanbevolen, 2)
+
 
 
 
@@ -251,133 +304,159 @@ def register_routes(app):
             # fallback
             return redirect(url_for('index'))
 
-   @app.route('/add_kot', methods=['GET', 'POST'])
-def add_kot():
-    if 'gebruiker_id' not in session or session.get('rol') not in ['student', 'kotbaas']:
-        return redirect(url_for('login'))
+    @app.route('/add_kot', methods=['GET', 'POST'])
+    def add_kot():
+        if 'gebruiker_id' not in session or session.get('rol') not in ['student', 'kotbaas']:
+            return redirect(url_for('login'))
 
-    rol = session.get('rol')
-    gebruiker = Gebruiker.query.get(session['gebruiker_id'])
+        rol = session.get('rol')
+        gebruiker = Gebruiker.query.get(session['gebruiker_id'])
 
-    if not gebruiker:
-        flash('Gebruiker niet gevonden.', 'error')
-        return redirect(url_for('login'))
+        if not gebruiker:
+            flash('Gebruiker niet gevonden.', 'error')
+            return redirect(url_for('login'))
 
-    if request.method == 'POST':
-        # Kotgegevens ophalen
-        adres = request.form['adres']
-        stad = request.form['stad']
-        oppervlakte = int(request.form['oppervlakte'])
-        aantal_slaapplaatsen = int(request.form['aantal_slaapplaatsen'])
-        maandhuurprijs = float(request.form['maandhuurprijs'])
-        egwkosten = float(request.form.get('egwkosten', 0))
-        eigen_keuken = bool(request.form.get('eigen_keuken'))
-        eigen_sanitair = bool(request.form.get('eigen_sanitair'))
+        if request.method == 'POST':
+            # Kotgegevens ophalen
+            adres = request.form['adres']
+            stad = request.form['stad']
+            oppervlakte = int(request.form['oppervlakte'])
+            aantal_slaapplaatsen = int(request.form['aantal_slaapplaatsen'])
+            maandhuurprijs = float(request.form['maandhuurprijs'])
+            egwkosten = float(request.form.get('egwkosten', 0))
+            eigen_keuken = bool(request.form.get('eigen_keuken'))
+            eigen_sanitair = bool(request.form.get('eigen_sanitair'))
 
-        # Kotbaas info
-        beschrijving = None
-        foto_url = ''
-        if rol in ['kotbaas', 'admin']:
-            beschrijving = request.form.get('beschrijving', '').strip() or None
-            foto_url = request.form.get('foto', '').strip() or ''
+            # Kotbaas info
+            beschrijving = None
+            foto_url = ''
+            if rol in ['kotbaas', 'admin']:
+                beschrijving = request.form.get('beschrijving', '').strip() or None
+                foto_url = request.form.get('foto', '').strip() or ''
 
-        # Datums
-        startdatum_str = request.form['startdatum']
-        einddatum_str = request.form['einddatum']
+            # Datums
+            startdatum_str = request.form['startdatum']
+            einddatum_str = request.form['einddatum']
 
-        startdatum = datetime.strptime(startdatum_str, "%Y-%m-%d")
-        einddatum = datetime.strptime(einddatum_str, "%Y-%m-%d")
+            startdatum = datetime.strptime(startdatum_str, "%Y-%m-%d")
+            einddatum = datetime.strptime(einddatum_str, "%Y-%m-%d")
 
-        if einddatum <= startdatum:
-            flash("Einddatum moet later zijn dan startdatum.", "error")
-            return redirect(url_for('add_kot'))
+            if einddatum <= startdatum:
+                flash("Einddatum moet later zijn dan startdatum.", "error")
+                return redirect(url_for('add_kot'))
 
-        # Naam van tegenpartij
-        student_id = None
-        kotbaas_id = None
+            # Naam van tegenpartij
+            student_id = None
+            kotbaas_id = None
 
-        if rol == 'student':
-            kotbaas_voornaam = request.form.get('kotbaas_voornaam', '').strip()
-            kotbaas_achternaam = request.form.get('kotbaas_achternaam', '').strip()
+            if rol == 'student':
+                kotbaas_voornaam = request.form.get('kotbaas_voornaam', '').strip()
+                kotbaas_achternaam = request.form.get('kotbaas_achternaam', '').strip()
 
-            if not kotbaas_voornaam or not kotbaas_achternaam:
-                flash('Vul zowel voornaam als achternaam van de kotbaas in.', 'error')
-                return render_template('add_kot.html', rol=rol, gebruiker=gebruiker)
+                if not kotbaas_voornaam or not kotbaas_achternaam:
+                    flash('Vul zowel voornaam als achternaam van de kotbaas in.', 'error')
+                    return render_template('add_kot.html', rol=rol, gebruiker=gebruiker)
 
-            kotbaas_naam = f"{kotbaas_voornaam} {kotbaas_achternaam}"
-            kotbaas = Gebruiker.query.filter_by(naam=kotbaas_naam, type='kotbaas').first()
+                kotbaas_naam = f"{kotbaas_voornaam} {kotbaas_achternaam}"
+                kotbaas = Gebruiker.query.filter_by(naam=kotbaas_naam, type='kotbaas').first()
 
-            if not kotbaas:
-                flash('Naam fout getypt of kotbaas niet geregistreerd.', 'error')
-                return render_template('add_kot.html', rol=rol, gebruiker=gebruiker)
+                if not kotbaas:
+                    flash('Naam fout getypt of kotbaas niet geregistreerd.', 'error')
+                    return render_template('add_kot.html', rol=rol, gebruiker=gebruiker)
 
-            kotbaas_id = kotbaas.gebruiker_id
-            student_id = session['gebruiker_id']
+                kotbaas_id = kotbaas.gebruiker_id
+                student_id = session['gebruiker_id']
 
-        elif rol == 'kotbaas':
-            eigenaar_voornaam = request.form.get('eigenaar_voornaam', '').strip()
-            eigenaar_achternaam = request.form.get('eigenaar_achternaam', '').strip()
-            gebruiker.naam = f"{eigenaar_voornaam} {eigenaar_achternaam}"
+            elif rol == 'kotbaas':
+                eigenaar_voornaam = request.form.get('eigenaar_voornaam', '').strip()
+                eigenaar_achternaam = request.form.get('eigenaar_achternaam', '').strip()
+                gebruiker.naam = f"{eigenaar_voornaam} {eigenaar_achternaam}"
 
-            student_naam = request.form['student_naam'].strip()
-            student = Gebruiker.query.filter_by(naam=student_naam, type='student').first()
+                student_naam = request.form['student_naam'].strip()
+                student = Gebruiker.query.filter_by(naam=student_naam, type='student').first()
 
-            if not student:
-                flash('Naam fout getypt of student niet geregistreerd.', 'error')
-                return render_template('add_kot.html', rol=rol, gebruiker=gebruiker)
+                if not student:
+                    flash('Naam fout getypt of student niet geregistreerd.', 'error')
+                    return render_template('add_kot.html', rol=rol, gebruiker=gebruiker)
 
-            kotbaas_id = gebruiker.gebruiker_id
-            student_id = student.gebruiker_id
+                kotbaas_id = gebruiker.gebruiker_id
+                student_id = student.gebruiker_id
 
-        # Initiatiefnemer-logica
-        initiatiefnemer_checked = bool(request.form.get('initiatiefnemer'))
-        initiatiefnemer = 'student' if (rol == 'student' and initiatiefnemer_checked) else 'kotbaas'
-        if rol == 'kotbaas' and not initiatiefnemer_checked:
-            initiatiefnemer = 'student'
+            # Initiatiefnemer-logica
+            initiatiefnemer_checked = bool(request.form.get('initiatiefnemer'))
+            initiatiefnemer = 'student' if (rol == 'student' and initiatiefnemer_checked) else 'kotbaas'
+            if rol == 'kotbaas' and not initiatiefnemer_checked:
+                initiatiefnemer = 'student'
 
-        #PRIJSALGORITME: AANGERADEN PRIJS BEREKENEN  
-        aangeraden_prijs = bereken_aangeraden_prijs(
-            stad=stad,
-            oppervlakte=oppervlakte,
-            aantal_slaapplaatsen=aantal_slaapplaatsen
-        )
+            # Prijsadvies berekenen
+            aangeraden_prijs = bereken_aangeraden_prijs(
+                oppervlakte=oppervlakte,
+                slaapplaatsen=aantal_slaapplaatsen,
+                stad=stad
+            )
 
-        flash(f"Op basis van gelijkaardige koten raden we een maandhuurprijs van €{aangeraden_prijs:.2f} aan.", "info")
+            if aangeraden_prijs:
+                flash(f"Op basis van gelijkaardige koten raden we een maandhuurprijs van €{aangeraden_prijs:.2f} aan.", "info")
+            else:
+                flash("Geen vergelijkbare koten gevonden om een prijsadvies te geven.", "info")
 
-        # Kot opslaan
-        kot = Kot(
-            student_id=student_id,
-            kotbaas_id=kotbaas_id,
-            adres=adres,
-            stad=stad,
-            oppervlakte=oppervlakte,
-            aantal_slaapplaatsen=aantal_slaapplaatsen,
-            maandhuurprijs=maandhuurprijs,
-            eigen_keuken=eigen_keuken,
-            eigen_sanitair=eigen_sanitair,
-            egwkosten=egwkosten,
-            goedgekeurd=False,
-            beschrijving=beschrijving,
-            foto=foto_url,
-            initiatiefnemer=initiatiefnemer,
-        )
-        db.session.add(kot)
-        db.session.commit()
+            # Kot opslaan
+            kot = Kot(
+                student_id=student_id,
+                kotbaas_id=kotbaas_id,
+                adres=adres,
+                stad=stad,
+                oppervlakte=oppervlakte,
+                aantal_slaapplaatsen=aantal_slaapplaatsen,
+                maandhuurprijs=maandhuurprijs,
+                eigen_keuken=eigen_keuken,
+                eigen_sanitair=eigen_sanitair,
+                egwkosten=egwkosten,
+                goedgekeurd=False,
+                beschrijving=beschrijving,
+                foto=foto_url,
+                initiatiefnemer=initiatiefnemer,
+            )
+            db.session.add(kot)
+            db.session.commit()
 
-        # Beschikbaarheid opslaan
-        beschikbaarheid = Beschikbaarheid(
-            kot_id=kot.kot_id,
-            startdatum=startdatum,
-            einddatum=einddatum,
-            status_beschikbaarheid="beschikbaar"
-        )
-        db.session.add(beschikbaarheid)
-        db.session.commit()
+            # Beschikbaarheid opslaan
+            beschikbaarheid = Beschikbaarheid(
+                kot_id=kot.kot_id,
+                startdatum=startdatum,
+                einddatum=einddatum,
+                status_beschikbaarheid="beschikbaar"
+            )
+            db.session.add(beschikbaarheid)
+            db.session.commit()
 
-        flash("Kot succesvol toegevoegd!", "success")
-        return redirect(url_for('dashboard'))
+            flash("Kot succesvol toegevoegd!", "success")
+            return redirect(url_for('dashboard'))
 
-    return render_template('add_kot.html', rol=session.get('rol'), gebruiker=gebruiker)
+        return render_template('add_kot.html', rol=session.get('rol'), gebruiker=gebruiker)
+
+    # Realtime prijsadvies route
+    @app.route('/prijsadvies', methods=['POST'])
+    def prijsadvies():
+        data = request.get_json()
+        oppervlakte = data.get('oppervlakte')
+        slaapplaatsen = data.get('slaapplaatsen')
+        stad = data.get('stad', None)
+
+        if not oppervlakte or not slaapplaatsen:
+            return {'advies': None}, 200
+
+        try:
+            oppervlakte = float(oppervlakte)
+            slaapplaatsen = int(slaapplaatsen)
+        except ValueError:
+            return {'advies': None}, 200
+
+        advies = bereken_aangeraden_prijs(oppervlakte, slaapplaatsen, stad)
+        if advies is None:
+            return {'advies': "Geen gelijkaardige koten aan dat van U"}, 200
+        return {'advies': f"Op basis van gelijkaardige koten raden we een maandhuurprijs van €{advies:.2f} aan."}, 200
+
 
     
     @app.route('/verwijder_kot/<int:kot_id>', methods=['POST'])
