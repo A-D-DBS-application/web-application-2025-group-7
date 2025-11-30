@@ -131,15 +131,17 @@
                 <option value="admin">Admin</option>
             </select>
 
+            <!-- ALTIJD ZICHTBAAR VOOR GEWONE GEBRUIKERS -->
             <div id="user-fields">
                 <label>Email</label>
                 <input type="email" name="email">
                 <span style="font-size: 12px; color:#666;">(Of gebruik naam indien geen e-mail)</span>
 
-                <label>Naam</label>
+                <label>Naam (voor- en achternaam)</label>
                 <input type="text" name="naam">
             </div>
 
+            <!-- ENKEL ADMIN -->
             <div id="admin-fields" style="display:none;">
                 <label>Admin gebruiker</label>
                 <input type="text" name="admin_username">

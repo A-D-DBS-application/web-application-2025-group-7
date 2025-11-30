@@ -92,7 +92,8 @@
     <script>
     function toggleUni() {
         var rol = document.getElementById('rol').value;
-        document.getElementById('uni-row').style.display = rol === 'student' ? 'block' : 'none';
+        document.getElementById('uni-row').style.display =
+            rol === 'student' ? 'block' : 'none';
     }
     </script>
 </head>
@@ -109,7 +110,7 @@
 
         <form method="POST">
 
-            <label>Naam</label>
+            <label>Naam (voor- en achternaam)</label>
             <input type="text" name="naam" required>
 
             <label>Email</label>
