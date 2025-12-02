@@ -661,6 +661,18 @@ def register_routes(app):
         if 'rol' not in session or session['rol'] != 'admin':
             return redirect(url_for('login'))
         zoekterm = request.args.get('zoekterm', '').strip()
+        status_filter = request.args.get('status_boeking', '').strip()
+        aantal_personen = request.args.get('aantal_personen', '').strip()
+        periode_start = request.args.get('periode_start', '').strip()
+        periode_eind = request.args.get('periode_eind', '').strip()
+
+        filters = {
+            'zoekterm': zoekterm,
+            'status_boeking': status_filter,
+            'aantal_personen': aantal_personen,
+            'periode_start': periode_start,
+            'periode_eind': periode_eind,
+        }
 
         boeking_query = Boeking.query \
             .outerjoin(Huurder, Boeking.gebruiker_id == Huurder.gebruiker_id) \
@@ -680,24 +692,73 @@ def register_routes(app):
                 )
             )
 
+        if status_filter:
+            boeking_query = boeking_query.filter(
+                func.lower(Boeking.status_boeking) == status_filter.lower()
+            )
+
+        if aantal_personen:
+            try:
+                aantal = int(aantal_personen)
+                boeking_query = boeking_query.filter(Boeking.aantal_personen == aantal)
+            except ValueError:
+                pass
+
+        if periode_start:
+            try:
+                start_dt = datetime.strptime(periode_start, "%Y-%m-%d")
+                boeking_query = boeking_query.filter(Boeking.startdatum >= start_dt)
+            except ValueError:
+                pass
+
+        if periode_eind:
+            try:
+                eind_dt = datetime.strptime(periode_eind, "%Y-%m-%d")
+                boeking_query = boeking_query.filter(Boeking.einddatum <= eind_dt)
+            except ValueError:
+                pass
+
         boekingen = boeking_query.all()
-        return render_template('admin_booking_overview.html', boekingen=boekingen, zoekterm=zoekterm)
+        return render_template(
+            'admin_booking_overview.html',
+            boekingen=boekingen,
+            filters=filters
+        )
 
     @app.route('/dashboard_admin_koten')
     def dashboard_admin_koten():
         if 'rol' not in session or session['rol'] != 'admin':
             return redirect(url_for('login'))
         zoekterm = request.args.get('zoekterm', '').strip()
+        min_capaciteit = request.args.get('min_capaciteit', '').strip()
+        max_capaciteit = request.args.get('max_capaciteit', '').strip()
+        min_omzet = request.args.get('min_omzet', '').strip()
+        max_omzet = request.args.get('max_omzet', '').strip()
+
+        filter_params = {
+            'zoekterm': zoekterm,
+            'min_capaciteit': min_capaciteit,
+            'max_capaciteit': max_capaciteit,
+            'min_omzet': min_omzet,
+            'max_omzet': max_omzet,
+        }
+
         kot_query = Kot.query.options(
             joinedload(Kot.kotbaas).joinedload(Kotbaas.gebruiker),
             joinedload(Kot.student).joinedload(Student.gebruiker),
             joinedload(Kot.boekingen)
         )
 
-        if zoekterm:
-            patroon = zoekterm.lower()
+        alle_koten = kot_query.all()
+        kot_statistieken = {}
+        gefilterde_koten = []
+        patroon = zoekterm.lower() if zoekterm else None
 
-            def kot_match(kot):
+        for kot in alle_koten:
+            # Bepaal eigenaar/student velden voor zoekterm
+            def kot_match():
+                if not patroon:
+                    return True
                 velden = [
                     kot.adres or '',
                     kot.stad or '',
@@ -711,26 +772,52 @@ def register_routes(app):
                     velden.append(kot.student.gebruiker.email or '')
                 return any(patroon in veld.lower() for veld in velden)
 
-            alle_koten = kot_query.all()
-            koten = [k for k in alle_koten if kot_match(k)]
-        else:
-            koten = kot_query.all()
-        kot_statistieken = {}
-
-        for kot in koten:
             maandhuur = float(kot.maandhuurprijs or 0)
             egwkosten = float(kot.egwkosten or 0)
             totale_maandlast = maandhuur + egwkosten
             omzet_per_nacht = totale_maandlast / 30 if totale_maandlast else 0
-            totale_omzet = 0.0
-
-            for boeking in kot.boekingen:
-                totaalprijs = float(boeking.totaalprijs or 0)
-                totale_omzet += totaalprijs
+            totale_omzet = sum(float(boeking.totaalprijs or 0) for boeking in kot.boekingen)
 
             toeristenbelasting = totale_omzet * DEFAULT_TOURIST_TAX_RATE
             egw_aandeel_omzet = totale_omzet * (egwkosten / totale_maandlast) if totale_maandlast else 0
             egw_per_nacht = egwkosten / 30 if egwkosten else 0
+
+            capaciteit = kot.aantal_slaapplaatsen or 0
+
+            if patroon and not kot_match():
+                continue
+
+            if min_capaciteit:
+                try:
+                    min_cap = int(min_capaciteit)
+                    if capaciteit < min_cap:
+                        continue
+                except ValueError:
+                    pass
+
+            if max_capaciteit:
+                try:
+                    max_cap = int(max_capaciteit)
+                    if capaciteit > max_cap:
+                        continue
+                except ValueError:
+                    pass
+
+            if min_omzet:
+                try:
+                    min_rev = float(min_omzet)
+                    if totale_omzet < min_rev:
+                        continue
+                except ValueError:
+                    pass
+
+            if max_omzet:
+                try:
+                    max_rev = float(max_omzet)
+                    if totale_omzet > max_rev:
+                        continue
+                except ValueError:
+                    pass
 
             kot_statistieken[kot.kot_id] = {
                 'omzet_per_nacht': omzet_per_nacht,
@@ -741,13 +828,14 @@ def register_routes(app):
                 'egw_per_nacht': egw_per_nacht,
                 'egw_aandeel_omzet': egw_aandeel_omzet,
             }
+            gefilterde_koten.append(kot)
 
         return render_template(
             'admin_kot_list.html',
-            koten=koten,
+            koten=gefilterde_koten,
             kot_statistieken=kot_statistieken,
             tourist_tax_rate=DEFAULT_TOURIST_TAX_RATE,
-            zoekterm=zoekterm
+            filters=filter_params
         )
 
     @app.route('/admin/kot/<int:kot_id>/edit', methods=['GET', 'POST'])

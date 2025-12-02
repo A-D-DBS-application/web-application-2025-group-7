@@ -99,13 +99,26 @@
 
     .status-chip {
         display: inline-block;
-        padding: 4px 10px;
+        padding: 6px 14px;
         border-radius: 999px;
-        font-size: 0.75rem;
+        font-size: 0.78rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.04em;
-        margin-left: 8px;
+        min-width: 135px;
+        text-align: center;
+        background: rgba(0,113,194,0.12);
+        color: #003b95;
+    }
+
+    .status-chip.pending {
+        background: rgba(255,193,7,0.16);
+        color: #8a6500;
+    }
+
+    .status-chip.confirmed {
+        background: rgba(46,125,50,0.18);
+        color: #245729;
     }
 
     .status-chip.cancelled {
@@ -113,26 +126,61 @@
         color: #9c1f1f;
     }
 
-    .search-bar {
+    .filter-panel {
+        background: white;
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 15px 25px rgba(0,0,0,0.07);
+        border: 1px solid rgba(0,59,149,0.08);
+        margin: 15px 0 20px 0;
+    }
+
+    .filter-form {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .filter-grid {
         display: flex;
         flex-wrap: wrap;
         gap: 12px;
-        align-items: center;
-        justify-content: space-between;
-        margin: 15px 0;
     }
 
-    .search-bar form {
+    .filter-grid .filter-field {
+        flex: 1;
+        min-width: 180px;
         display: flex;
-        gap: 10px;
-        flex: 1;
+        flex-direction: column;
+        gap: 6px;
     }
 
-    .search-bar input[type="text"] {
-        flex: 1;
+    .filter-grid label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #002a70;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .filter-grid input,
+    .filter-grid select {
         padding: 10px 14px;
         border-radius: 10px;
         border: 1px solid #cfd8ea;
+        font-size: 0.95rem;
+    }
+
+    .filter-grid select option {
+        font-weight: 500;
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
     }
 
     .btn-secondary {
@@ -150,19 +198,69 @@
     }
 </style>
 
-<div class="search-bar">
-    <form action="{{ url_for('dashboard_admin') }}" method="get">
-        <input type="text"
-               name="zoekterm"
-               placeholder="Zoek op huurder, email, telefoon, adres, stad…"
-               value="{{ zoekterm }}">
-        <button type="submit" class="btn-primary">Zoeken</button>
-        {% if zoekterm %}
-            <a href="{{ url_for('dashboard_admin') }}" class="btn-secondary" style="text-decoration:none; display:flex; align-items:center;">Wissen</a>
-        {% endif %}
-    </form>
-    <form action="{{ url_for('dashboard_admin') }}" method="get">
-        <button type="submit" class="btn-primary" style="white-space:nowrap;">Ververs overzicht</button>
+<div class="filter-panel">
+    <form action="{{ url_for('dashboard_admin') }}" method="get" class="filter-form">
+        <div class="filter-grid">
+            <div class="filter-field" style="flex:2;">
+                <label for="zoekterm">Zoekterm</label>
+                <input type="text"
+                       id="zoekterm"
+                       name="zoekterm"
+                       placeholder="Zoek op huurder, email, telefoon, adres, stad…"
+                       value="{{ filters.zoekterm }}">
+            </div>
+
+            <div class="filter-field">
+                <label for="status_boeking">Status</label>
+                <select id="status_boeking" name="status_boeking">
+                    <option value="">Alle statussen</option>
+                    {% set status_opties = ['in afwachting', 'bevestigd', 'geannuleerd'] %}
+                    {% for status in status_opties %}
+                        <option value="{{ status }}"
+                                {% if filters.status_boeking == status %}selected{% endif %}>
+                            {{ status.title() }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="aantal_personen">Aantal personen</label>
+                <input type="number"
+                       id="aantal_personen"
+                       name="aantal_personen"
+                       min="1"
+                       placeholder="vb. 2"
+                       value="{{ filters.aantal_personen }}">
+            </div>
+
+            <div class="filter-field">
+                <label for="periode_start">Startdatum</label>
+                <input type="date"
+                       id="periode_start"
+                       name="periode_start"
+                       value="{{ filters.periode_start }}">
+            </div>
+
+            <div class="filter-field">
+                <label for="periode_eind">Einddatum</label>
+                <input type="date"
+                       id="periode_eind"
+                       name="periode_eind"
+                       value="{{ filters.periode_eind }}">
+            </div>
+        </div>
+
+        <div class="filter-actions">
+            <button type="submit" class="btn-primary">Filters toepassen</button>
+            {% if filters.zoekterm or filters.status_boeking or filters.aantal_personen or filters.periode_start or filters.periode_eind %}
+                <a href="{{ url_for('dashboard_admin') }}"
+                   class="btn-secondary"
+                   style="text-decoration:none; display:flex; align-items:center;">
+                    Wissen
+                </a>
+            {% endif %}
+        </div>
     </form>
 </div>
 
@@ -207,11 +305,15 @@
 
                 <td>{{ boeking.aantal_personen }}</td>
                 <td>{{ huurder.voorkeuren if huurder and huurder.voorkeuren else 'n.v.t.' }}</td>
+                {% set status_text = boeking.status_boeking or 'n.v.t.' %}
+                {% set status_lower = status_text.lower() %}
+                {% set status_class = 'cancelled' if 'geannuleerd' in status_lower
+                    else 'confirmed' if 'bevestigd' in status_lower
+                    else 'pending' if 'afwachting' in status_lower
+                    else '' %}
+
                 <td>
-                    {{ boeking.status_boeking }}
-                    {% if is_cancelled %}
-                        <span class="status-chip cancelled">Geannuleerd</span>
-                    {% endif %}
+                    <span class="status-chip {{ status_class }}">{{ status_text }}</span>
                 </td>
 
                 {% set start = boeking.startdatum %}
