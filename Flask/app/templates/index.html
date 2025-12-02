@@ -181,6 +181,17 @@
     <h1 class="site-title">Koten Zoeken</h1>
     <div class="auth-links">
         {% if session.get('gebruiker_id') or session.get('rol') == 'admin' %}
+            {% if session.get('rol') %}
+                {% set rol = session.get('rol') %}
+                {% if rol == 'admin' %}
+                    {% set rol_route = url_for('dashboard_admin') %}
+                {% elif rol == 'kotbaas' %}
+                    {% set rol_route = url_for('dashboard_kotbaas') %}
+                {% else %}
+                    {% set rol_route = url_for('dashboard') %}
+                {% endif %}
+                <a href="{{ rol_route }}">{{ rol|capitalize }}</a>
+            {% endif %}
             <a href="{{ url_for('logout') }}">Uitloggen</a>
         {% else %}
             <a href="{{ url_for('login') }}">Login</a>

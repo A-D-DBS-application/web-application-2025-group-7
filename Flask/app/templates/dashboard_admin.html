@@ -149,8 +149,10 @@
 
 <header>
     <div class="logo-badge">
-        <img src="{{ url_for('static', filename='uploads/logo_gitoo_transparant.png') }}"
-            alt="Gitoo logo">
+        <a href="{{ url_for('index') }}" style="display:inline-block;">
+            <img src="{{ url_for('static', filename='uploads/logo_gitoo_transparant.png') }}"
+                alt="Gitoo logo">
+        </a>
     </div>
     <h1 class="site-title">Gitoo Admin Dashboard</h1>
     <div class="header-spacer"></div>
