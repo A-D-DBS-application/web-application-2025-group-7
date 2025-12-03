@@ -153,6 +153,36 @@
         <p class="info-line">Je hebt geen verzoeken om te accorderen.</p>
     {% endfor %}
 
+    <!-- CONTRACTEN TE ONDERTEKENEN -->
+    <h2>Contracten te ondertekenen</h2>
+
+    {% for contract in contracten_te_ondertekenen %}
+        <div class="inbox-card">
+            <p><strong>Kot:</strong> {{ contract.kot.adres }}, {{ contract.kot.stad }}</p>
+            <p><strong>Student:</strong> {{ contract.student.gebruiker.naam }}</p>
+
+            {% if contract.pad_contract_sjabloon %}
+                <p>
+                    <a href="{{ contract.pad_contract_sjabloon }}" target="_blank">
+                        Bekijk basiscontract
+                    </a>
+                </p>
+            {% endif %}
+
+            <form method="post"
+                  action="{{ url_for('contract_kotbaas', kot_id=contract.kot_id) }}"
+                  enctype="multipart/form-data">
+                <label>Upload ondertekend contract (PDF/afbeelding)</label><br>
+                <input type="file" name="contract_file" accept=".pdf,.png,.jpg,.jpeg" required>
+                <br><br>
+                <button class="btn-primary">Upload contract</button>
+            </form>
+        </div>
+    {% else %}
+        <p class="info-line">Je hebt geen contracten te ondertekenen.</p>
+    {% endfor %}
+
+
     <a href="{{ url_for('logout') }}" class="logout">Uitloggen</a>
 
 </div>

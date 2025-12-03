@@ -1,14 +1,21 @@
 from operator import and_
 from warnings import filters
 from flask import render_template, request, redirect, url_for, session, flash, send_file
-import io
 from werkzeug.utils import secure_filename
 import os, time
 from sqlalchemy.orm import joinedload
 from sqlalchemy import or_, func
-from .models import Beschikbaarheid, db, Gebruiker, Student, Huurder, Kot, Boeking, Kotbaas
+from .models import Beschikbaarheid, db, Gebruiker, Student, Huurder, Kot, Boeking, Kotbaas, Contract
 from datetime import datetime, timedelta
-# import weasyprint
+# Bestandsupload instellingen voor contracten
+UPLOAD_CONTRACT_DIR = os.path.join('static', 'contracts')
+os.makedirs(UPLOAD_CONTRACT_DIR, exist_ok=True)
+ALLOWED_CONTRACT_EXTENSIONS = {'.pdf', '.png', '.jpg', '.jpeg'}
+# Hulpfunctie om bestands extensie te controleren
+def allowed_contract_file(filename):
+    ext = os.path.splitext(filename)[1].lower()
+    return ext in ALLOWED_CONTRACT_EXTENSIONS
+
 
 #Algoritme voor prijsadvies
 from datetime import datetime, timedelta
@@ -283,14 +290,21 @@ def register_routes(app):
         if actieve_rol == 'student' and gebruiker.student:
             koten = Kot.query.filter_by(student_id=gebruiker.student.gebruiker_id).all()
             inbox = Boeking.query.join(Kot).filter(Kot.student_id == gebruiker.student.gebruiker_id).all()
+            # Contracten die wachten op student
+            contracten_te_ondertekenen = Contract.query.filter_by(
+                student_id=gebruiker.student.gebruiker_id,
+                status_contract='wachten_op_student'
+            ).all()
             return render_template(
                 'dashboard_student.html',
                 koten=koten,
                 inbox=inbox,
                 naam=gebruiker.naam,
                 rollen=rollen,
-                actieve_rol=actieve_rol
+                actieve_rol=actieve_rol,
+                contracten_te_ondertekenen=contracten_te_ondertekenen
             )
+        
         elif actieve_rol == 'huurder' and gebruiker.huurder:
             boekingen = Boeking.query.filter_by(gebruiker_id=gebruiker.huurder.gebruiker_id).all()
             return render_template(
@@ -646,29 +660,124 @@ def register_routes(app):
             return redirect(url_for('login'))
 
         kotbaas = Kotbaas.query.get(session['gebruiker_id'])
-        # Geeft alle koten waarbij hij kotbaas is
         koten = Kot.query.filter_by(kotbaas_id=kotbaas.gebruiker_id).all()
         pending_koten = Kot.query.filter_by(kotbaas_id=kotbaas.gebruiker_id, goedgekeurd=False).all()
+
+        # Contracten die wachten op kotbaas
+        contracten_te_ondertekenen = Contract.query.filter_by(
+            kotbaas_id=kotbaas.gebruiker_id,
+            status_contract='wachten_op_kotbaas'
+        ).all()
+
         return render_template(
             'dashboard_kotbaas.html',
             naam=kotbaas.gebruiker.naam,
             koten=koten,
-            pending_koten=pending_koten
+            pending_koten=pending_koten,
+            contracten_te_ondertekenen=contracten_te_ondertekenen
         )
+
+
+    @app.route('/kot/<int:kot_id>/contract/kotbaas', methods=['GET', 'POST'])
+    def contract_kotbaas(kot_id):
+        if 'gebruiker_id' not in session or session.get('rol') != 'kotbaas':
+            return redirect(url_for('login'))
+
+        kot = Kot.query.get_or_404(kot_id)
+        if kot.kotbaas_id != session['gebruiker_id']:
+            flash("Je mag alleen contracten voor je eigen koten beheren.", "error")
+            return redirect(url_for('dashboard_kotbaas'))
+
+        contract = Contract.query.filter_by(kot_id=kot.kot_id).first()
+        if not contract:
+            flash("Er is nog geen contract voor dit kot aangemaakt.", "error")
+            return redirect(url_for('dashboard_kotbaas'))
+
+        if request.method == 'POST':
+            file = request.files.get('contract_file')
+            if not file or not file.filename:
+                flash("Upload een bestand.", "error")
+                return redirect(url_for('contract_kotbaas', kot_id=kot_id))
+
+            if not allowed_contract_file(file.filename):
+                flash("Bestandstype niet toegestaan. Gebruik pdf, png, jpg of jpeg.", "error")
+                return redirect(url_for('contract_kotbaas', kot_id=kot_id))
+
+            filename = secure_filename(file.filename)
+            unique_name = f"kot{kot_id}_kotbaas_{int(time.time())}{os.path.splitext(filename)[1].lower()}"
+            save_path = os.path.join(app.static_folder, 'contracts')
+            os.makedirs(save_path, exist_ok=True)
+            full_path = os.path.join(save_path, unique_name)
+            file.save(full_path)
+
+            static_rel = f"contracts/{unique_name}"
+            contract.pad_kotbaas = url_for('static', filename=static_rel)
+            contract.status_contract = 'wachten_op_student'
+            db.session.commit()
+
+            flash("Ondertekend contract succesvol geüpload. De student kan nu ondertekenen.", "success")
+            return redirect(url_for('dashboard_kotbaas'))
+
+        return render_template('contract_kotbaas_upload.html', kot=kot, contract=contract)
+
+    @app.route('/kot/<int:kot_id>/contract/student', methods=['GET', 'POST'])
+    def contract_student(kot_id):
+        if 'gebruiker_id' not in session or session.get('rol') != 'student':
+            return redirect(url_for('login'))
+
+        kot = Kot.query.get_or_404(kot_id)
+        contract = Contract.query.filter_by(kot_id=kot.kot_id).first()
+
+        if not contract or contract.student_id != session['gebruiker_id']:
+            flash("Je mag dit contract niet beheren.", "error")
+            return redirect(url_for('dashboard'))
+
+        if contract.status_contract not in ('wachten_op_student', 'compleet'):
+            flash("Dit contract wacht nog op de kotbaas.", "error")
+            return redirect(url_for('dashboard'))
+
+        if request.method == 'POST':
+            file = request.files.get('contract_file')
+            if not file or not file.filename:
+                flash("Upload een bestand.", "error")
+                return redirect(url_for('contract_student', kot_id=kot_id))
+
+            if not allowed_contract_file(file.filename):
+                flash("Bestandstype niet toegestaan. Gebruik pdf, png, jpg of jpeg.", "error")
+                return redirect(url_for('contract_student', kot_id=kot_id))
+
+            filename = secure_filename(file.filename)
+            unique_name = f"kot{kot_id}_student_{int(time.time())}{os.path.splitext(filename)[1].lower()}"
+            save_path = os.path.join(app.static_folder, 'contracts')
+            os.makedirs(save_path, exist_ok=True)
+            full_path = os.path.join(save_path, unique_name)
+            file.save(full_path)
+
+            static_rel = f"contracts/{unique_name}"
+            contract.pad_student = url_for('static', filename=static_rel)
+            contract.status_contract = 'compleet'
+            db.session.commit()
+
+            flash("Je ondertekende contract is geüpload. Gitoo kan het nu verwerken.", "success")
+            return redirect(url_for('dashboard'))
+
+        return render_template('contract_student_upload.html', kot=kot, contract=contract)
+
     
     @app.route('/dashboard_admin')
     def dashboard_admin():
         if 'rol' not in session or session['rol'] != 'admin':
             return redirect(url_for('login'))
+
         zoekterm = request.args.get('zoekterm', '').strip()
-        status_filter = request.args.get('status_boeking', '').strip()
+        status_boeking = request.args.get('status_boeking', '').strip()
         aantal_personen = request.args.get('aantal_personen', '').strip()
         periode_start = request.args.get('periode_start', '').strip()
         periode_eind = request.args.get('periode_eind', '').strip()
 
         filters = {
             'zoekterm': zoekterm,
-            'status_boeking': status_filter,
+            'status_boeking': status_boeking,
             'aantal_personen': aantal_personen,
             'periode_start': periode_start,
             'periode_eind': periode_eind,
@@ -692,73 +801,54 @@ def register_routes(app):
                 )
             )
 
-        if status_filter:
-            boeking_query = boeking_query.filter(
-                func.lower(Boeking.status_boeking) == status_filter.lower()
-            )
+        if status_boeking:
+            boeking_query = boeking_query.filter(Boeking.status_boeking == status_boeking)
 
         if aantal_personen:
             try:
-                aantal = int(aantal_personen)
-                boeking_query = boeking_query.filter(Boeking.aantal_personen == aantal)
+                ap = int(aantal_personen)
+                boeking_query = boeking_query.filter(Boeking.aantal_personen == ap)
             except ValueError:
                 pass
 
-        if periode_start:
+        # Periode filter
+        if periode_start or periode_eind:
             try:
-                start_dt = datetime.strptime(periode_start, "%Y-%m-%d")
-                boeking_query = boeking_query.filter(Boeking.startdatum >= start_dt)
-            except ValueError:
-                pass
-
-        if periode_eind:
-            try:
-                eind_dt = datetime.strptime(periode_eind, "%Y-%m-%d")
-                boeking_query = boeking_query.filter(Boeking.einddatum <= eind_dt)
+                start_dt = datetime.strptime(periode_start, "%Y-%m-%d") if periode_start else None
+                eind_dt = datetime.strptime(periode_eind, "%Y-%m-%d") if periode_eind else None
+                if start_dt and eind_dt:
+                    boeking_query = boeking_query.filter(
+                        Boeking.startdatum >= start_dt,
+                        Boeking.einddatum <= eind_dt
+                    )
+                elif start_dt:
+                    boeking_query = boeking_query.filter(Boeking.startdatum >= start_dt)
+                elif eind_dt:
+                    boeking_query = boeking_query.filter(Boeking.einddatum <= eind_dt)
             except ValueError:
                 pass
 
         boekingen = boeking_query.all()
-        return render_template(
-            'admin_booking_overview.html',
-            boekingen=boekingen,
-            filters=filters
-        )
+        return render_template('admin_booking_overview.html',
+                            boekingen=boekingen,
+                            filters=filters)
+
 
     @app.route('/dashboard_admin_koten')
     def dashboard_admin_koten():
         if 'rol' not in session or session['rol'] != 'admin':
             return redirect(url_for('login'))
         zoekterm = request.args.get('zoekterm', '').strip()
-        min_capaciteit = request.args.get('min_capaciteit', '').strip()
-        max_capaciteit = request.args.get('max_capaciteit', '').strip()
-        min_omzet = request.args.get('min_omzet', '').strip()
-        max_omzet = request.args.get('max_omzet', '').strip()
-
-        filter_params = {
-            'zoekterm': zoekterm,
-            'min_capaciteit': min_capaciteit,
-            'max_capaciteit': max_capaciteit,
-            'min_omzet': min_omzet,
-            'max_omzet': max_omzet,
-        }
-
         kot_query = Kot.query.options(
             joinedload(Kot.kotbaas).joinedload(Kotbaas.gebruiker),
             joinedload(Kot.student).joinedload(Student.gebruiker),
             joinedload(Kot.boekingen)
         )
 
-        alle_koten = kot_query.all()
-        kot_statistieken = {}
-        gefilterde_koten = []
-        patroon = zoekterm.lower() if zoekterm else None
+        if zoekterm:
+            patroon = zoekterm.lower()
 
-        for kot in alle_koten:
-            # Bepaal eigenaar/student velden voor zoekterm
-            def kot_match():
-                if not patroon:
-                    return True
+            def kot_match(kot):
                 velden = [
                     kot.adres or '',
                     kot.stad or '',
@@ -772,52 +862,26 @@ def register_routes(app):
                     velden.append(kot.student.gebruiker.email or '')
                 return any(patroon in veld.lower() for veld in velden)
 
+            alle_koten = kot_query.all()
+            koten = [k for k in alle_koten if kot_match(k)]
+        else:
+            koten = kot_query.all()
+        kot_statistieken = {}
+
+        for kot in koten:
             maandhuur = float(kot.maandhuurprijs or 0)
             egwkosten = float(kot.egwkosten or 0)
             totale_maandlast = maandhuur + egwkosten
             omzet_per_nacht = totale_maandlast / 30 if totale_maandlast else 0
-            totale_omzet = sum(float(boeking.totaalprijs or 0) for boeking in kot.boekingen)
+            totale_omzet = 0.0
+
+            for boeking in kot.boekingen:
+                totaalprijs = float(boeking.totaalprijs or 0)
+                totale_omzet += totaalprijs
 
             toeristenbelasting = totale_omzet * DEFAULT_TOURIST_TAX_RATE
             egw_aandeel_omzet = totale_omzet * (egwkosten / totale_maandlast) if totale_maandlast else 0
             egw_per_nacht = egwkosten / 30 if egwkosten else 0
-
-            capaciteit = kot.aantal_slaapplaatsen or 0
-
-            if patroon and not kot_match():
-                continue
-
-            if min_capaciteit:
-                try:
-                    min_cap = int(min_capaciteit)
-                    if capaciteit < min_cap:
-                        continue
-                except ValueError:
-                    pass
-
-            if max_capaciteit:
-                try:
-                    max_cap = int(max_capaciteit)
-                    if capaciteit > max_cap:
-                        continue
-                except ValueError:
-                    pass
-
-            if min_omzet:
-                try:
-                    min_rev = float(min_omzet)
-                    if totale_omzet < min_rev:
-                        continue
-                except ValueError:
-                    pass
-
-            if max_omzet:
-                try:
-                    max_rev = float(max_omzet)
-                    if totale_omzet > max_rev:
-                        continue
-                except ValueError:
-                    pass
 
             kot_statistieken[kot.kot_id] = {
                 'omzet_per_nacht': omzet_per_nacht,
@@ -828,14 +892,13 @@ def register_routes(app):
                 'egw_per_nacht': egw_per_nacht,
                 'egw_aandeel_omzet': egw_aandeel_omzet,
             }
-            gefilterde_koten.append(kot)
 
         return render_template(
             'admin_kot_list.html',
-            koten=gefilterde_koten,
+            koten=koten,
             kot_statistieken=kot_statistieken,
             tourist_tax_rate=DEFAULT_TOURIST_TAX_RATE,
-            filters=filter_params
+            zoekterm=zoekterm
         )
 
     @app.route('/admin/kot/<int:kot_id>/edit', methods=['GET', 'POST'])
@@ -899,6 +962,30 @@ def register_routes(app):
         db.session.commit()
         flash('Boeking gemarkeerd als geannuleerd.', 'success')
         return redirect(url_for('dashboard_admin'))
+    
+    @app.route('/dashboard_admin_contracten')
+    def dashboard_admin_contracten():
+        if 'rol' not in session or session['rol'] != 'admin':
+            return redirect(url_for('login'))
+
+        status_filter = request.args.get('status', '').strip()
+        query = Contract.query.options(
+            joinedload(Contract.kot),
+            joinedload(Contract.student).joinedload(Student.gebruiker),
+            joinedload(Contract.kotbaas).joinedload(Kotbaas.gebruiker)
+        )
+
+        if status_filter:
+            query = query.filter(Contract.status_contract == status_filter)
+
+        contracten = query.all()
+
+        return render_template(
+            'admin_contract_list.html',
+            contracten=contracten,
+            status_filter=status_filter
+        )
+
 
     @app.route('/boeking/<int:boeking_id>/cancel', methods=['POST'])
     def cancel_boeking(boeking_id):
@@ -920,37 +1007,33 @@ def register_routes(app):
         flash('Boeking succesvol geannuleerd.', 'success')
         return redirect(url_for('dashboard'))
     
-    @app.route('/approve_kot/<int:kot_id>', methods=['POST']) # Kotbaas moet kot eerst goedkeuren
+    @app.route('/approve_kot/<int:kot_id>', methods=['POST']) #Kotbaas moet eerst kot goedkeuren
     def approve_kot(kot_id):
         kot = Kot.query.get_or_404(kot_id)
         if 'gebruiker_id' not in session or session.get('rol') != 'kotbaas' or session['gebruiker_id'] != kot.kotbaas_id:
             flash("Je mag alleen je eigen koten goedkeuren.", "error")
             return redirect(url_for('dashboard_kotbaas'))
+
+        # Kot zichtbaar maken
         kot.goedgekeurd = True
         db.session.commit()
-        flash("Kot succesvol goedgekeurd en zichtbaar gemaakt.", "success")
+
+        # Contract aanmaken indien nog niet bestaand
+        bestaand_contract = Contract.query.filter_by(kot_id=kot.kot_id).first()
+        if not bestaand_contract:
+            contract = Contract(
+                kot_id=kot.kot_id,
+                student_id=kot.student_id,
+                kotbaas_id=kot.kotbaas_id,
+                status_contract='wachten_op_kotbaas'
+            )
+            db.session.add(contract)
+            db.session.commit()
+            flash("Kot goedgekeurd. Er is een contractopdracht aangemaakt in je dashboard.", "success")
+        else:
+            flash("Kot goedgekeurd. Er bestond al een contract voor dit kot.", "info")
+
         return redirect(url_for('dashboard_kotbaas'))
-    
-    @app.route('/generate_contract/<int:kot_id>')
-    def generate_contract(kot_id):
-        kot = Kot.query.get_or_404(kot_id)
-        contract_html = render_template('contract_template.html',
-            kotbaas_naam=kot.kotbaas.gebruiker.naam,
-            kotbaas_email=kot.kotbaas.gebruiker.email,
-            kotbaas_telefoon=kot.kotbaas.gebruiker.telefoon,
-            student_naam=kot.student.gebruiker.naam,
-            student_email=kot.student.gebruiker.email,
-            student_telefoon=kot.student.gebruiker.telefoon,
-            kot_adres=kot.adres,
-            kot_oppervlakte=kot.oppervlakte
-        )
-        pdf = weasyprint.HTML(string=contract_html).write_pdf()
-        return send_file(
-            io.BytesIO(pdf),
-            as_attachment=True,
-            download_name=f"Gitoo_Contract_{kot_id}.pdf",
-            mimetype='application/pdf'
-        )
 
 
     

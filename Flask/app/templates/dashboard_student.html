@@ -149,6 +149,35 @@
         <p class="text-muted">Geen boekingen ontvangen.</p>
     {% endif %}
 
+    <!-- CONTRACTEN TE ONDERTEKENEN -->
+    <h2 class="mt-5 mb-3">Contracten te ondertekenen</h2>
+    {% if contracten_te_ondertekenen %}
+        <ul class="list-group">
+            {% for contract in contracten_te_ondertekenen %}
+            <li class="list-group-item">
+                <strong>{{ contract.kot.adres }}, {{ contract.kot.stad }}</strong><br>
+                Kotbaas: {{ contract.kotbaas.gebruiker.naam if contract.kotbaas and contract.kotbaas.gebruiker else "Onbekend" }}<br>
+                {% if contract.pad_kotbaas %}
+                    <a href="{{ contract.pad_kotbaas }}" target="_blank">Download contract van kotbaas</a><br>
+                {% endif %}
+                <form action="{{ url_for('contract_student', kot_id=contract.kot_id) }}"
+                      method="post"
+                      enctype="multipart/form-data"
+                      style="margin-top:10px;">
+                    <label>Upload jouw ondertekende contract</label><br>
+                    <input type="file" name="contract_file" accept=".pdf,.png,.jpg,.jpeg" required>
+                    <br>
+                    <button type="submit" class="btn btn-primary btn-sm mt-2">
+                        Upload ondertekend contract
+                    </button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">Je hebt geen contracten te ondertekenen.</p>
+    {% endif %}
+
     <a class="btn btn-outline-secondary mt-4" href="{{ url_for('logout') }}">Uitloggen</a>
 </body>
 </html>

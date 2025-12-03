@@ -1,4 +1,5 @@
 from . import db
+from datetime import datetime
 
 class Gebruiker(db.Model):
     __tablename__ = 'gebruiker'
@@ -78,3 +79,28 @@ class Kotbaas(db.Model):
     gebruiker_id = db.Column(db.Integer, db.ForeignKey('gebruiker.gebruiker_id'), primary_key=True)
     initiatiefnemer = db.Column(db.Boolean, default=False)
     gebruiker = db.relationship('Gebruiker', backref='kotbaas', uselist=False)
+
+class Contract(db.Model):
+    __tablename__ = 'contract'
+
+    contract_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    # Koppeling aan kot + partijen
+    kot_id = db.Column(db.Integer, db.ForeignKey('kot.kot_id'), nullable=False, unique=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.gebruiker_id'), nullable=False)
+    kotbaas_id = db.Column(db.Integer, db.ForeignKey('kotbaas.gebruiker_id'), nullable=False)
+    # Status: 'wachten_op_kotbaas', 'wachten_op_student', 'compleet'
+    status_contract = db.Column(db.String(50), nullable=False, default='wachten_op_kotbaas')
+    # Paden naar uploads (PDF/scan)
+    pad_contract_sjabloon = db.Column(db.String)      # optioneel: gegenereerd basiscontract
+    pad_kotbaas = db.Column(db.String)                # door kotbaas ondertekend
+    pad_student = db.Column(db.String)                # door student ondertekend
+    aangemaakt_op = db.Column(db.DateTime, default=datetime.utcnow)
+    laatst_bijgewerkt_op = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow
+    )
+    # Relaties
+    kot = db.relationship('Kot', backref=db.backref('contract', uselist=False))
+    student = db.relationship('Student', backref='contracten')
+    kotbaas = db.relationship('Kotbaas', backref='contracten')
