@@ -54,6 +54,13 @@ class Kot(db.Model):
     boekingen = db.relationship('Boeking', backref='kot', lazy=True)
     student = db.relationship('Student', backref='koten', foreign_keys=[student_id])
     kotbaas = db.relationship('Kotbaas', backref='koten', foreign_keys=[kotbaas_id])
+    contract = db.relationship(
+        'Contract',
+        backref='kot',
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
+
 
 class Beschikbaarheid(db.Model):
     __tablename__ = "beschikbaarheid"
@@ -101,6 +108,5 @@ class Contract(db.Model):
         onupdate=datetime.utcnow
     )
     # Relaties
-    kot = db.relationship('Kot', backref=db.backref('contract', uselist=False))
     student = db.relationship('Student', backref='contracten')
     kotbaas = db.relationship('Kotbaas', backref='contracten')

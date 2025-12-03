@@ -495,8 +495,10 @@ def register_routes(app):
         Beschikbaarheid.query.filter_by(kot_id=kot_id).delete()
         Boeking.query.filter_by(kot_id=kot_id).delete()
 
+        # Contract wordt automatisch mee verwijderd door cascade op Kot.contract
         db.session.delete(kot)
         db.session.commit()
+
         flash('Kot succesvol verwijderd!')
         if rol == 'student':
             return redirect(url_for('dashboard'))
