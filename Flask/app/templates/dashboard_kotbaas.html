@@ -160,14 +160,17 @@
         <div class="inbox-card">
             <p><strong>Kot:</strong> {{ contract.kot.adres }}, {{ contract.kot.stad }}</p>
             <p><strong>Student:</strong> {{ contract.student.gebruiker.naam }}</p>
-
-            {% if contract.pad_contract_sjabloon %}
-                <p>
-                    <a href="{{ contract.pad_contract_sjabloon }}" target="_blank">
-                        Bekijk basiscontract
-                    </a>
-                </p>
-            {% endif %}
+            <!-- Download leeg Gitoo-contract -->
+            <p>
+                <a href="{{ url_for('static', filename='contracts/Gitoo_Verhuurcontract.pdf') }}"
+                   class="btn-primary"
+                   download>
+                    Download leeg Gitoo‑contract
+                </a>
+            </p>
+            <p class="info-line" style="margin-top:4px;">
+                Download dit document, vul het in en onderteken het. Upload daarna de ondertekende versie hieronder.
+            </p>
 
             <form method="post"
                   action="{{ url_for('contract_kotbaas', kot_id=contract.kot_id) }}"
@@ -180,7 +183,7 @@
         </div>
     {% else %}
         <p class="info-line">Je hebt geen contracten te ondertekenen.</p>
-    {% endfor %}
+    {% endfor %}    
 
 
     <a href="{{ url_for('logout') }}" class="logout">Uitloggen</a>
