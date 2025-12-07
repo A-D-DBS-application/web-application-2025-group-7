@@ -989,6 +989,35 @@ def register_routes(app):
         )
 
 
+    @app.route('/boeking/<int:boeking_id>/pay', methods=['POST'])
+    def pay_boeking(boeking_id):
+        """Markeer een boeking van de huurder als volledig betaald."""
+        if 'gebruiker_id' not in session:
+            return redirect(url_for('login'))
+
+        gebruiker = Gebruiker.query.get(session['gebruiker_id'])
+        if not gebruiker or not gebruiker.huurder:
+            flash('Deze actie is alleen voor huurders.', 'error')
+            return redirect(url_for('dashboard'))
+
+        boeking = Boeking.query.get_or_404(boeking_id)
+        if boeking.gebruiker_id != gebruiker.huurder.gebruiker_id:
+            flash('Je kan enkel je eigen boekingen betalen.', 'error')
+            return redirect(url_for('dashboard'))
+
+        status = (boeking.status_boeking or '').lower()
+        if 'geannuleerd' in status:
+            flash('Geannuleerde boekingen kunnen niet betaald worden.', 'info')
+            return redirect(url_for('dashboard'))
+        if 'betaald' in status:
+            flash('Deze boeking was al als betaald gemarkeerd.', 'info')
+            return redirect(url_for('dashboard'))
+
+        boeking.status_boeking = 'betaald (hele termijn)'
+        db.session.commit()
+        flash('Bedankt! De volledige betaling is geregistreerd.', 'success')
+        return redirect(url_for('dashboard'))
+
     @app.route('/boeking/<int:boeking_id>/cancel', methods=['POST'])
     def cancel_boeking(boeking_id):
         if 'gebruiker_id' not in session:

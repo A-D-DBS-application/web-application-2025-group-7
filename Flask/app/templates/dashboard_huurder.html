@@ -126,8 +126,41 @@
             cursor: not-allowed;
         }
 
+        .btn-success {
+            background-color: #2e7d32;
+            border: none;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-success:hover {
+            background-color: #1b5e20;
+        }
+
+        .btn-success:disabled {
+            background-color: #d6d6d6;
+            color: #777;
+            cursor: not-allowed;
+        }
+
         .kot-card form {
             margin-top: 18px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 18px;
+        }
+
+        .status-chip.paid {
+            background: rgba(46,125,50,0.15);
+            color: #205723;
         }
 
         
@@ -172,6 +205,7 @@
 
     {% for boeking in boekingen %}
         {% set is_cancelled = boeking.status_boeking and 'geannuleerd' in boeking.status_boeking.lower() %}
+        {% set is_paid = boeking.status_boeking and 'betaald' in boeking.status_boeking.lower() %}
         <div class="kot-card {% if is_cancelled %}cancelled{% endif %}">
             <h3 style="margin-top:0;">{{ boeking.kot.adres }}, {{ boeking.kot.stad }}</h3>
 
@@ -182,18 +216,37 @@
                 <strong>Status:</strong> {{ boeking.status_boeking }}
                 {% if is_cancelled %}
                     <span class="status-chip cancelled">Geannuleerd</span>
+                {% elif is_paid %}
+                    <span class="status-chip paid">Betaald</span>
                 {% endif %}
             </p>
             <p class="info-line"><strong>Startdatum:</strong> {{ boeking.startdatum.strftime('%d-%m-%Y') }}</p>
             <p class="info-line"><strong>Einddatum:</strong> {{ boeking.einddatum.strftime('%d-%m-%Y') }}</p>
 
-            <form action="{{ url_for('cancel_boeking', boeking_id=boeking.boeking_id) }}"
-                  method="post"
-                  onsubmit="return confirm('Weet je zeker dat je deze boeking wil annuleren?');">
-                <button type="submit" class="btn-danger" {% if is_cancelled %}disabled{% endif %}>
-                    {% if is_cancelled %}Reeds geannuleerd{% else %}Annuleer boeking{% endif %}
-                </button>
-            </form>
+            <div class="action-buttons">
+                <form action="{{ url_for('pay_boeking', boeking_id=boeking.boeking_id) }}"
+                      method="post">
+                    <button type="submit"
+                            class="btn-success"
+                            {% if is_cancelled or is_paid %}disabled{% endif %}>
+                        {% if is_paid %}
+                            Reeds betaald
+                        {% elif is_cancelled %}
+                            Betalen niet mogelijk
+                        {% else %}
+                            Betaal
+                        {% endif %}
+                    </button>
+                </form>
+
+                <form action="{{ url_for('cancel_boeking', boeking_id=boeking.boeking_id) }}"
+                      method="post"
+                      onsubmit="return confirm('Weet je zeker dat je deze boeking wil annuleren?');">
+                    <button type="submit" class="btn-danger" {% if is_cancelled %}disabled{% endif %}>
+                        {% if is_cancelled %}Reeds geannuleerd{% else %}Annuleer boeking{% endif %}
+                    </button>
+                </form>
+            </div>
 
             {% if is_cancelled %}
                 <p class="info-line" style="color:#8a1f1f; margin-top:10px;">
