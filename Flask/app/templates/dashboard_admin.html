@@ -130,17 +130,17 @@
             margin-bottom: 10px;
         }
 
-        a.logout {
-            display: inline-block;
-            margin-top: 35px;
-            text-decoration: none;
-            color: #003b95;
-            font-weight: bold;
+        .auth-links a {
+            color:#fff;
+            text-decoration:none;
+            margin-left:14px;
+            font-weight:600;
+            padding:8px 12px;
+            border:1px solid rgba(255,255,255,0.4);
+            border-radius:6px;
+            display:inline-block;
         }
-
-        a.logout:hover {
-            text-decoration: underline;
-        }
+        .auth-links a:hover { background:rgba(255,255,255,0.15); }
 
     </style>
 </head>
@@ -155,7 +155,9 @@
         </a>
     </div>
     <h1 class="site-title">Gitoo Admin Dashboard</h1>
-    <div class="header-spacer"></div>
+    <div class="auth-links">
+        <a href="{{ url_for('logout') }}">Uitloggen</a>
+    </div>
 </header>
 
 <div class="container">
@@ -186,7 +188,7 @@
         </div>
     </div>
 
-    <a href="{{ url_for('logout') }}" class="logout">Uitloggen</a>
+    
 
 </div>
 
