@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Bevestig betaling</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+        }
+        header {
+            background-color: #003b95;
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+        .container {
+            width: 92%;
+            max-width: 700px;
+            margin: 30px auto;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+            padding: 24px 26px 28px 26px;
+        }
+        h2 {
+            color: #003b95;
+            margin-top: 0;
+        }
+        .info-line {
+            margin: 6px 0;
+            color: #444;
+        }
+        .highlight {
+            background: #f0f6ff;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin: 18px 0;
+        }
+        .btn-primary {
+            background-color: #0071c2;
+            border: none;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-primary:hover {
+            background-color: #005999;
+        }
+        a.link {
+            color: #003b95;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a.link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Bevestig je betaling</h1>
+</header>
+
+<div class="container">
+    <h2>{{ boeking.kot.adres }}, {{ boeking.kot.stad }}</h2>
+
+    <p class="info-line">
+        Periode:
+        {{ boeking.startdatum.strftime('%d-%m-%Y') }}
+        t.e.m.
+        {{ boeking.einddatum.strftime('%d-%m-%Y') }}
+    </p>
+
+    <p class="info-line">
+        Maandhuur: €{{ boeking.kot.maandhuurprijs }} / maand
+    </p>
+
+    <div class="highlight">
+        <p class="info-line"><strong>Te betalen bedrag voor deze periode:</strong></p>
+        <p class="info-line" style="font-size:1.2rem; font-weight:bold;">
+            €{{ totaal_bedrag }}
+        </p>
+    </div>
+
+    <h3>Betaalgegevens Gitoo</h3>
+    <p class="info-line"><strong>Rekeningnummer:</strong> {{ rekeningnummer }}</p>
+    <p class="info-line"><strong>Tenaamstelling:</strong> {{ tenaamstelling }}</p>
+    <p class="info-line"><strong>Mededeling:</strong> Boeking {{ boeking.boeking_id }}</p>
+
+    <p class="info-line" style="margin-top:18px;">
+        Voer de overschrijving uit via je bankapp. Klik daarna op onderstaande knop
+        om te bevestigen dat je betaald hebt.
+    </p>
+
+    <form method="post">
+        <button type="submit" class="btn-primary">
+            Ik heb betaald
+        </button>
+    </form>
+
+    <p style="margin-top:18px;">
+        <a href="{{ url_for('dashboard') }}" class="link">Terug naar dashboard</a>
+    </p>
+</div>
+
+</body>
+</html>

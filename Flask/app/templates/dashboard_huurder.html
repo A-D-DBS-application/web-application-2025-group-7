@@ -224,8 +224,8 @@
             <p class="info-line"><strong>Einddatum:</strong> {{ boeking.einddatum.strftime('%d-%m-%Y') }}</p>
 
             <div class="action-buttons">
-                <form action="{{ url_for('pay_boeking', boeking_id=boeking.boeking_id) }}"
-                      method="post">
+                <form action="{{ url_for('betaling_overzicht', boeking_id=boeking.boeking_id) }}"
+                    method="get">
                     <button type="submit"
                             class="btn-success"
                             {% if is_cancelled or is_paid %}disabled{% endif %}>
@@ -238,6 +238,7 @@
                         {% endif %}
                     </button>
                 </form>
+
 
                 <form action="{{ url_for('cancel_boeking', boeking_id=boeking.boeking_id) }}"
                       method="post"

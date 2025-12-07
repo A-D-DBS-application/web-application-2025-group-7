@@ -600,6 +600,46 @@ def register_routes(app):
             huurder=huurder
         )
 
+    @app.route('/boeking/<int:boeking_id>/betaling', methods=['GET', 'POST'])
+    def betaling_overzicht(boeking_id):
+        if 'gebruiker_id' not in session or session.get('rol') != 'huurder':
+            return redirect(url_for('login'))
+
+        boeking = Boeking.query.get_or_404(boeking_id)
+
+        # Zeker zijn dat deze boeking van de ingelogde huurder is
+        if boeking.gebruiker_id != session['gebruiker_id']:
+            flash("Je mag deze betaling niet uitvoeren.", "error")
+            return redirect(url_for('dashboard'))
+
+        # Totale prijs berekenen (eenvoudig: maandhuur * aantal maanden)
+        # Of gebruik jouw bestaande berekening indien je die hebt.
+        start = boeking.startdatum
+        eind = boeking.einddatum
+        dagen = (eind - start).days or 1
+        # voorbeeld: prijs per dag = maandhuur / 30
+        prijs_per_dag = boeking.kot.maandhuurprijs / 30
+        totaal_bedrag = round(dagen * prijs_per_dag, 2)
+
+        if request.method == 'POST':
+            # Hier 'simuleer' je de betaling: status op betaald
+            boeking.status_boeking = "Betaald"
+            db.session.commit()
+            flash("Je betaling is geregistreerd.", "success")
+            return redirect(url_for('dashboard'))
+
+        rekeningnummer = "BE12 3456 7890 1234"  # Gitoo-rekeningnummer
+        tenaamstelling = "Gitoo BV"
+
+        return render_template(
+            'betaling_overzicht.html',
+            boeking=boeking,
+            totaal_bedrag=totaal_bedrag,
+            rekeningnummer=rekeningnummer,
+            tenaamstelling=tenaamstelling
+        )
+
+
     # Admin-only: update beschrijving
     @app.route('/admin/kot/<int:kot_id>/update_description', methods=['POST'])
     def admin_update_description(kot_id):
