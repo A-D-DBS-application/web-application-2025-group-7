@@ -194,6 +194,42 @@
     .action-cell form {
         margin: 0;
     }
+
+    .tax-panel {
+        margin-bottom: 20px;
+        background: #f8fbff;
+        border-radius: 16px;
+        padding: 16px 20px;
+        border: 1px solid rgba(0,59,149,0.12);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.05);
+    }
+
+    .tax-panel h3 {
+        margin-top: 0;
+        margin-bottom: 6px;
+        color: #003b95;
+    }
+
+    .tax-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .tax-form input {
+        max-width: 200px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid #cfd8ea;
+        font-size: 1rem;
+    }
+
+    .tax-panel small {
+        display: block;
+        color: #4f5a6d;
+        margin-top: 8px;
+    }
 </style>
 
 <div class="filter-panel">
@@ -266,9 +302,25 @@
     </form>
 </div>
 
+<div class="tax-panel">
+    <h3>Toeristenbelasting</h3>
+    <form action="{{ url_for('update_tourist_tax') }}" method="post" class="tax-form">
+        <label for="tourist_tax_amount" style="font-weight:600; color:#002a70;">€ per persoon per nacht</label>
+        <input type="number"
+               id="tourist_tax_amount"
+               name="tourist_tax_amount"
+               min="0"
+               step="0.10"
+               value="{{ '%.2f'|format(tourist_tax_amount) }}"
+               required>
+        <button type="submit" class="btn-primary">Opslaan</button>
+    </form>
+    <small>Nieuwe waarde wordt meteen gebruikt voor alle koten in dit overzicht.</small>
+</div>
+
 <p style="font-size:0.9rem; color:#555; margin-bottom:0;">
     Toeristenbelasting wordt automatisch berekend aan een vast tarief van 
-    {{ "%.0f"|format(tourist_tax_rate * 100) }}% van de totale omzet.
+    &euro;{{ "%.2f"|format(tourist_tax_amount) }} per persoon per nacht.
 </p>
 
 <div class="table-scroll">

@@ -110,3 +110,9 @@ class Contract(db.Model):
     # Relaties
     student = db.relationship('Student', backref='contracten')
     kotbaas = db.relationship('Kotbaas', backref='contracten')
+
+
+class SysteemInstelling(db.Model):
+    __tablename__ = 'systeem_instelling'
+    sleutel = db.Column(db.String(120), primary_key=True)
+    waarde = db.Column(db.String, nullable=False)

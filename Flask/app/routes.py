@@ -5,7 +5,18 @@ from werkzeug.utils import secure_filename
 import os, time
 from sqlalchemy.orm import joinedload
 from sqlalchemy import or_, func
-from .models import Beschikbaarheid, db, Gebruiker, Student, Huurder, Kot, Boeking, Kotbaas, Contract
+from .models import (
+    Beschikbaarheid,
+    db,
+    Gebruiker,
+    Student,
+    Huurder,
+    Kot,
+    Boeking,
+    Kotbaas,
+    Contract,
+    SysteemInstelling,
+)
 from datetime import datetime, timedelta
 # Bestandsupload instellingen voor contracten
 UPLOAD_CONTRACT_DIR = os.path.join('static', 'contracts')
@@ -72,9 +83,31 @@ def bereken_aangeraden_prijs(oppervlakte, slaapplaatsen, stad=None):
     return round(aanbevolen, 2)
 
 
+DEFAULT_TOURIST_TAX_PER_PERSON_PER_NIGHT = 6.0  # fallbacktarief per persoon, per nacht
+TOURIST_TAX_SETTING_KEY = 'tourist_tax_per_person_per_night'
 
 
-DEFAULT_TOURIST_TAX_RATE = 0.06  # 6% standaardtoeslag op de totale omzet
+def get_tourist_tax_amount():
+    setting = SysteemInstelling.query.get(TOURIST_TAX_SETTING_KEY)
+    if setting:
+        try:
+            value = float(setting.waarde)
+            if value >= 0:
+                return value
+        except (TypeError, ValueError):
+            pass
+    return DEFAULT_TOURIST_TAX_PER_PERSON_PER_NIGHT
+
+
+def save_tourist_tax_amount(new_value):
+    setting = SysteemInstelling.query.get(TOURIST_TAX_SETTING_KEY)
+    if not setting:
+        setting = SysteemInstelling(sleutel=TOURIST_TAX_SETTING_KEY, waarde=str(new_value))
+        db.session.add(setting)
+    else:
+        setting.waarde = str(new_value)
+    db.session.commit()
+    return new_value
 
 def register_routes(app):
 
@@ -909,6 +942,7 @@ def register_routes(app):
         else:
             koten = kot_query.all()
         kot_statistieken = {}
+        tourist_tax_amount = get_tourist_tax_amount()
 
         for kot in koten:
             maandhuur = float(kot.maandhuurprijs or 0)
@@ -916,20 +950,26 @@ def register_routes(app):
             totale_maandlast = maandhuur + egwkosten
             omzet_per_nacht = totale_maandlast / 30 if totale_maandlast else 0
             totale_omzet = 0.0
+            totale_toeristenbelasting = 0.0
 
             for boeking in kot.boekingen:
                 totaalprijs = float(boeking.totaalprijs or 0)
                 totale_omzet += totaalprijs
+                personen = int(boeking.aantal_personen or 1)
+                nachten = 0
+                if boeking.startdatum and boeking.einddatum:
+                    delta_dagen = (boeking.einddatum.date() - boeking.startdatum.date()).days
+                    nachten = max(delta_dagen, 0)
+                totale_toeristenbelasting += personen * nachten * tourist_tax_amount
 
-            toeristenbelasting = totale_omzet * DEFAULT_TOURIST_TAX_RATE
             egw_aandeel_omzet = totale_omzet * (egwkosten / totale_maandlast) if totale_maandlast else 0
             egw_per_nacht = egwkosten / 30 if egwkosten else 0
 
             kot_statistieken[kot.kot_id] = {
                 'omzet_per_nacht': omzet_per_nacht,
                 'totale_omzet': totale_omzet,
-                'toeristenbelasting': toeristenbelasting,
-                'omzet_na_belasting': max(totale_omzet - toeristenbelasting, 0.0),
+                'toeristenbelasting': totale_toeristenbelasting,
+                'omzet_na_belasting': max(totale_omzet - totale_toeristenbelasting, 0.0),
                 'egw_per_maand': egwkosten,
                 'egw_per_nacht': egw_per_nacht,
                 'egw_aandeel_omzet': egw_aandeel_omzet,
@@ -939,9 +979,28 @@ def register_routes(app):
             'admin_kot_list.html',
             koten=koten,
             kot_statistieken=kot_statistieken,
-            tourist_tax_rate=DEFAULT_TOURIST_TAX_RATE,
+            tourist_tax_amount=tourist_tax_amount,
             zoekterm=zoekterm
         )
+
+    @app.route('/admin/tourist_tax', methods=['POST'])
+    def update_tourist_tax():
+        if session.get('rol') != 'admin':
+            return redirect(url_for('login'))
+
+        raw_value = request.form.get('tourist_tax_amount', '').strip().replace(',', '.')
+        try:
+            new_value = float(raw_value)
+            if new_value < 0:
+                raise ValueError
+        except ValueError:
+            flash('Voer een geldige positieve waarde in voor de toeristenbelasting.', 'error')
+            return redirect(url_for('dashboard_admin_koten'))
+
+        rounded_value = round(new_value, 2)
+        save_tourist_tax_amount(rounded_value)
+        flash(f'Toeristenbelasting bijgewerkt naar €{rounded_value:.2f} per persoon per nacht.', 'success')
+        return redirect(url_for('dashboard_admin_koten'))
 
     @app.route('/admin/kot/<int:kot_id>/edit', methods=['GET', 'POST'])
     def admin_kot_edit(kot_id):
