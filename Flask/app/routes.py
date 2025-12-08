@@ -537,7 +537,7 @@ def register_routes(app):
             return redirect(url_for('dashboard'))
         else:
             return redirect(url_for('dashboard_kotbaas'))
-
+        
 
     @app.route('/boek/<int:kot_id>', methods=['GET', 'POST'])
     def boek(kot_id):
@@ -564,6 +564,7 @@ def register_routes(app):
             startdatum = None
             einddatum = None
 
+            # Datums parsen
             try:
                 startdatum = datetime.strptime(startdatum_str, "%Y-%m-%d")
                 einddatum = datetime.strptime(einddatum_str, "%Y-%m-%d")
@@ -574,6 +575,7 @@ def register_routes(app):
                 flash('Ongeldige start- of einddatum.', 'error')
                 fouten = True
 
+            # Aantal personen valideren
             try:
                 aantal_personen = int(aantal_personen_str)
                 if aantal_personen <= 0:
@@ -588,6 +590,7 @@ def register_routes(app):
                 flash(f'Er is maximaal plaats voor {max_personen} personen in dit kot.', 'error')
                 fouten = True
 
+            # STOP en toon formulier opnieuw als er fouten zijn
             if fouten:
                 return render_template(
                     'boek.html',
@@ -598,6 +601,46 @@ def register_routes(app):
                     huurder=huurder
                 )
 
+            # 1) Niet eigen kot huren (student of kotbaas)
+            huurder_id = huurder.gebruiker_id
+            is_student_eigen_kot = (kot.student_id == huurder_id)
+            is_kotbaas_eigen_kot = (kot.kotbaas_id == huurder_id)
+            if is_student_eigen_kot or is_kotbaas_eigen_kot:
+                flash('Je kan je eigen kot niet huren.', 'error')
+                return render_template(
+                    'boek.html',
+                    kot=kot,
+                    default_start=startdatum_str or default_start.strftime('%Y-%m-%d'),
+                    default_end=einddatum_str or default_end.strftime('%Y-%m-%d'),
+                    form_data=request.form,
+                    huurder=huurder
+                )
+
+            # 2) Gevraagde periode moet binnen beschikbaarheid liggen
+            #    (veronderstelt een Beschikbaarheid-tabel met kot_id, startdatum, einddatum)
+            beschikbare = Beschikbaarheid.query.filter_by(kot_id=kot.kot_id).all()
+            # we zoeken minstens één beschikbaarheidsrecord dat de volledige periode dekt
+            volledig_beschikbaar = False
+            for b in beschikbare:
+                # b.startdatum en b.einddatum zijn Date; startdatum/einddatum hier zijn datetime
+                b_start = datetime.combine(b.startdatum, datetime.min.time())
+                b_end = datetime.combine(b.einddatum, datetime.min.time())
+                if b_start <= startdatum and b_end >= einddatum:
+                    volledig_beschikbaar = True
+                    break
+
+            if not volledig_beschikbaar:
+                flash('Dit kot is niet beschikbaar in de gekozen periode.', 'error')
+                return render_template(
+                    'boek.html',
+                    kot=kot,
+                    default_start=startdatum_str or default_start.strftime('%Y-%m-%d'),
+                    default_end=einddatum_str or default_end.strftime('%Y-%m-%d'),
+                    form_data=request.form,
+                    huurder=huurder
+                )
+
+            # Prijsberekening
             dagen = max((einddatum - startdatum).days, 1)
             maandprijs = float(kot.maandhuurprijs or 0)
             egwkosten = float(kot.egwkosten or 0)
@@ -624,14 +667,17 @@ def register_routes(app):
             flash('Boeking aangevraagd! We houden je op de hoogte.', 'success')
             return redirect(url_for('dashboard'))
 
+        # GET: leeg formulier tonen
         return render_template(
             'boek.html',
             kot=kot,
             default_start=default_start.strftime('%Y-%m-%d'),
             default_end=default_end.strftime('%Y-%m-%d'),
-            form_data=None,
+            form_data={},
             huurder=huurder
         )
+
+
 
     @app.route('/boeking/<int:boeking_id>/betaling', methods=['GET', 'POST'])
     def betaling_overzicht(boeking_id):
@@ -903,6 +949,7 @@ def register_routes(app):
             except ValueError:
                 pass
 
+        boeking_query = boeking_query.order_by(Boeking.startdatum.asc())
         boekingen = boeking_query.all()
         return render_template('admin_booking_overview.html',
                             boekingen=boekingen,

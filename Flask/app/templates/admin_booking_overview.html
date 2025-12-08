@@ -21,7 +21,7 @@
         background: white;
         border-radius: 16px;
         overflow: hidden;
-        box-shadow: 0 25px 40px rgba(0,0,0,0.08);
+        box-shadow: 0 25px 40px #00000014;
         table-layout: auto;
         border: 1px solid rgba(0,59,149,0.12);
     }
@@ -214,7 +214,7 @@
                 <label for="status_boeking">Status</label>
                 <select id="status_boeking" name="status_boeking">
                     <option value="">Alle statussen</option>
-                    {% set status_opties = ['in afwachting', 'bevestigd', 'geannuleerd'] %}
+                    {% set status_opties = ['in afwachting', 'betaald', 'geannuleerd'] %}
                     {% for status in status_opties %}
                         <option value="{{ status }}"
                                 {% if filters.status_boeking == status %}selected{% endif %}>
@@ -308,7 +308,7 @@
                 {% set status_text = boeking.status_boeking or 'n.v.t.' %}
                 {% set status_lower = status_text.lower() %}
                 {% set status_class = 'cancelled' if 'geannuleerd' in status_lower
-                    else 'confirmed' if 'bevestigd' in status_lower
+                    else 'confirmed' if 'betaald' in status_lower
                     else 'pending' if 'afwachting' in status_lower
                     else '' %}
 
