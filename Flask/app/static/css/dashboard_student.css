@@ -1,0 +1,137 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f7fa;
+    margin: 0;
+}
+
+header {
+    background-color: #003b95;
+    padding: 20px;
+    color: white;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+.auth-links a {
+    color:#fff;
+    text-decoration:none;
+    margin-left:14px;
+    font-weight:600;
+    padding:8px 12px;
+    border:1px solid rgba(255,255,255,0.4);
+    border-radius:6px;
+    display:inline-block;
+}
+.auth-links a:hover { background:rgba(255,255,255,0.15); }
+
+.container {
+    width: 92%;
+    max-width: 900px;
+    margin: 30px auto;
+}
+
+/* Rol switcher */
+.switcher-box {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+}
+
+select {
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+/* Kot cards */
+.kot-card {
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+    overflow: hidden;
+}
+
+.kot-info {
+    padding: 15px 18px 20px 18px;
+}
+
+.kot-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.kot-location {
+    color: #6c757d;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.kot-price {
+    font-weight: 600;
+    font-size: 17px;
+    color: #0d6efd;
+    margin-top: 10px;
+}
+
+h2 {
+    color: #003b95;
+    margin-top: 30px;
+}
+
+.info-line {
+    color: #444;
+    margin: 4px 0;
+}
+
+.btn-primary {
+    background-color: #0071c2;
+    border: none;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-primary:hover {
+    background-color: #005999;
+}
+
+.btn-danger {
+    background-color: #c62828;
+    border: none;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-danger:hover {
+    background-color: #a71d1d;
+}
+
+ul.simple-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+ul.simple-list li {
+    background: white;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.badge-status {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #e0e0e0;
+    font-size: 0.75rem;
+}

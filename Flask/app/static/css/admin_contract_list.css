@@ -1,0 +1,61 @@
+.filter-panel {
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 15px 25px rgba(0,0,0,0.07);
+    border: 1px solid rgba(0,59,149,0.08);
+}
+.filter-panel form {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.filter-panel select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #cfd8ea;
+}
+.btn-primary {
+    background-color: #0071c2;
+    border: none;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.btn-primary:hover {
+    background-color: #005999;
+}
+
+.table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 16px;
+    padding-bottom: 8px;
+}
+.contract-table {
+    width: 100%;
+    min-width: 1000px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 25px 40px rgba(0,0,0,0.08);
+    font-size: 0.92rem;
+    border: 1px solid rgba(0,59,149,0.12);
+}
+.contract-table thead {
+    background: linear-gradient(135deg, #f0f6ff, #dfe9ff);
+}
+.contract-table th,
+.contract-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #e6e6e6;
+}
+.contract-table tr:last-child td {
+    border-bottom: none;
+}
