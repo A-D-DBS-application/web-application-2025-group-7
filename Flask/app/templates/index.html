@@ -15,8 +15,9 @@
             color: white;
             padding: 20px;
             display:flex;
-            justify-content:space-between;
+            justify-content:center;
             align-items:center;
+            position:relative;
         }
 
         header h1 {
@@ -179,7 +180,7 @@
             alt="Gitoo logo">
     </div>
     
-    <div class="auth-links">
+    <div class="auth-links" style="position:absolute; right:20px; top:20px;">
         {% if session.get('gebruiker_id') or session.get('rol') == 'admin' %}
             {% if session.get('rol') %}
                 {% set rol = session.get('rol') %}

@@ -47,6 +47,21 @@
             width:130px;
         }
 
+        .home-icon {
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            width:56px;
+            height:56px;
+            border-radius:12px;
+            background:rgba(255,255,255,0.95);
+            box-shadow:0 6px 20px rgba(0,0,0,0.25);
+            text-decoration:none;
+        }
+        .home-icon svg {
+            width:26px; height:26px; fill:#003b95;
+        }
+
         @media (max-width: 640px) {
             header {
                 flex-direction: column;
@@ -148,12 +163,11 @@
 <body>
 
 <header>
-    <div class="logo-badge">
-        <a href="{{ url_for('index') }}" style="display:inline-block;">
-            <img src="{{ url_for('static', filename='uploads/logo_gitoo_transparant.png') }}"
-                alt="Gitoo logo">
-        </a>
-    </div>
+    <a class="home-icon" href="{{ url_for('index') }}" title="Ga naar home">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+        </svg>
+    </a>
     <h1 class="site-title">Gitoo Admin Dashboard</h1>
     <div class="auth-links">
         <a href="{{ url_for('logout') }}">Uitloggen</a>
