@@ -1,8 +1,22 @@
 import os
 
 class Config:
-    SECRET_KEY = 'a3b7c0f9c61a497e8f6d43b295de0f5dfd0a54e7d601e802d94ec32d58b99b8d'
-    SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI", 
-        "postgresql://postgres:Group_7@db.lkvstjspyeslqzzjmyca.supabase.co:5432/postgres"
-        )
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SECRET_KEY = os.getenv("SECRET_KEY", "your_secret_key")
+    
+    # Get database URL and convert to use psycopg3 driver if needed
+    _db_url = os.getenv(
+        "DATABASE_URL",
+        "postgresql://postgres.lkvstjspyeslqzzjmyca:Group_7@aws-1-eu-central-1.pooler.supabase.com:5432/postgres")
+    
+    #Convert postgresql:// to postgresql+psycopg:// to use psycopg3 
+    if _db_url.startswith("postgresql://") and not _db_url.startswith("postgresql+psycopg://"):
+        _db_url = _db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+    SQLALCHEMY_DATABASE_URI = _db_url
+    # Connection pool settings to handle Supabase connection issues
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_size": 15,
+        "max_overflow": 20,
+        "pool_timeout": 30,
+        "pool_recycle": 1800,
+    }
