@@ -1,0 +1,99 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f7fa;
+    margin: 0;
+}
+
+header {
+    background-color: #003b95;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+.container {
+    width: 92%;
+    max-width: 700px;
+    margin: 30px auto;
+}
+
+.book-card {
+    background: white;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+}
+
+h2 {
+    color: #003b95;
+    margin-top: 0;
+}
+
+label {
+    font-weight: bold;
+    color: #003b95;
+    margin-top: 15px;
+    display: block;
+}
+
+input[type="date"],
+input[type="number"],
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-top: 5px;
+    font-size: 15px;
+}
+
+.btn-primary {
+    background-color: #0071c2;
+    border: none;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.btn-primary:hover {
+    background-color: #005999;
+}
+
+.btn-secondary {
+    color: #003b95;
+    text-decoration: none;
+    font-weight: bold;
+    margin-left: 15px;
+}
+
+.btn-secondary:hover {
+    text-decoration: underline;
+}
+
+.messages ul {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+}
+
+.messages li {
+    padding: 8px 10px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+.msg-error {
+    background: #ffe5e5;
+    color: #d40000;
+    border-left: 4px solid #d40000;
+}
+
+.msg-success {
+    background: #e5ffea;
+    color: #008f3b;
+    border-left: 4px solid #008f3b;
+}
