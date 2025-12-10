@@ -195,41 +195,37 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const oppervlakteField = document.getElementById('oppervlakte');
-    const slaapplaatsenField = document.getElementById('aantal_slaapplaatsen');
-    const stadField = document.getElementById('stad');
-    const adviesField = document.getElementById('prijsadvies');
+    const oppervlakteInput = document.getElementById('oppervlakte');
+    const slaapplaatsenInput = document.getElementById('aantal_slaapplaatsen');
+    const stadInput = document.getElementById('stad');
+    const adviesDiv = document.getElementById('prijsadvies');
 
     function updatePrijsadvies() {
-        const oppervlakte = oppervlakteField.value;
-        const slaapplaatsen = slaapplaatsenField.value;
-        const stad = stadField.value;
+        const oppervlakte = oppervlakteInput.value;
+        const slaapplaatsen = slaapplaatsenInput.value;
+        const stad = stadInput.value;
 
-        if (!oppervlakte || !slaapplaatsen) {
-            adviesField.textContent = '';
-            return;
-        }
+        if (!oppervlakte || !slaapplaatsen) return;
 
-        fetch('{{ url_for("prijsadvies") }}', {
+        fetch('/prijsadvies', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({oppervlakte, slaapplaatsen, stad})
         })
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
-            adviesField.textContent = data.advies || '';
-        })
-        .catch(err => {
-            console.error(err);
-            adviesField.textContent = '';
+            adviesDiv.textContent = data.advies || '';
         });
     }
 
-    oppervlakteField.addEventListener('input', updatePrijsadvies);
-    slaapplaatsenField.addEventListener('input', updatePrijsadvies);
-    stadField.addEventListener('input', updatePrijsadvies);
+    oppervlakteInput.addEventListener('input', updatePrijsadvies);
+    slaapplaatsenInput.addEventListener('input', updatePrijsadvies);
+    stadInput.addEventListener('input', updatePrijsadvies);
 });
 </script>
+
+<div id="prijsadvies" style="margin-top:10px; font-weight:bold;"></div>
+
 
 </body>
 </html>
