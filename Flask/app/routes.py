@@ -338,19 +338,30 @@ def register_routes(app):
                 beschrijving = request.form.get('beschrijving', '').strip() or None
                 foto_url = request.form.get('foto', '').strip() or ''
 
-            # datums
-            startdatum_str = request.form['startdatum']
-            einddatum_str = request.form['einddatum']
+            #Wanneer einddatum < begindatum niet alle velden leegmaken 
+            #haal alle formulierdata
+            form_data = request.form.to_dict()
+
+            # probeer datums om te zetten
+            startdatum_str = form_data.get('startdatum', '')
+            einddatum_str = form_data.get('einddatum', '')
+
             try:
                 startdatum = datetime.strptime(startdatum_str, "%Y-%m-%d")
                 einddatum = datetime.strptime(einddatum_str, "%Y-%m-%d")
             except ValueError:
                 flash("Datums ongeldig.", "error")
-                return render_template('add_kot.html', rol=rol, gebruiker=gebruiker)
+                # alleen datums leegmaken
+                form_data['startdatum'] = ''
+                form_data['einddatum'] = ''
+                return render_template('add_kot.html', rol=rol, gebruiker=gebruiker, **form_data)
 
             if einddatum <= startdatum:
                 flash("Einddatum moet later zijn dan startdatum.", "error")
-                return render_template('add_kot.html', rol=rol, gebruiker=gebruiker)
+                # alleen datums leegmaken
+                form_data['startdatum'] = ''
+                form_data['einddatum'] = ''
+                return render_template('add_kot.html', rol=rol, gebruiker=gebruiker, **form_data)
 
             # Bepaal student_id en kotbaas_id
             student_id = None

@@ -38,134 +38,124 @@
         <div class="card-body">
 
             <form method="POST" class="row g-3">
-
                 <div class="col-md-6">
                     <label class="form-label">Adres (straatnaam, huisnummer, bus)</label>
-                    <input type="text" name="adres" class="form-control" placeholder="bv. Kerkstraat 12 bus 3" required>
+                    <input type="text" name="adres" class="form-control" placeholder="bv. Kerkstraat 12 bus 3" value="{{ adres }}" required>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Stad</label>
-                    <input type="text" name="stad" class="form-control" id="stad" required>
+                    <input type="text" name="stad" class="form-control" id="stad" value="{{ stad }}" required>
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label">Oppervlakte (m²)</label>
-                    <input type="number" name="oppervlakte" class="form-control" id="oppervlakte" min="0" required>
+                    <input type="number" name="oppervlakte" class="form-control" id="oppervlakte" min="0" value="{{ oppervlakte }}" required>
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label">Slaapplaatsen</label>
-                    <input type="number" name="aantal_slaapplaatsen" class="form-control" id="aantal_slaapplaatsen" min="0" required>
+                    <input type="number" name="aantal_slaapplaatsen" class="form-control" id="aantal_slaapplaatsen" min="0" value="{{ aantal_slaapplaatsen }}" required>
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label">Maandhuurprijs (€)</label>
-                    <input type="number" name="maandhuurprijs" class="form-control" id="maandhuurprijs" min="0" required>
+                    <input type="number" name="maandhuurprijs" class="form-control" id="maandhuurprijs" min="0" value="{{ maandhuurprijs }}" required>
                     <small id="prijsadvies" class="form-text text-muted"></small>
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label">EGW-kosten (€)</label>
-                    <input type="number" name="egwkosten" class="form-control" min="0">
+                    <input type="number" name="egwkosten" class="form-control" min="0" value="{{ egwkosten }}">
                 </div>
 
                 {% if rol == 'kotbaas' or rol == 'admin' %}
                 <div class="col-12">
                     <label class="form-label">Beschrijving</label>
-                    <textarea class="form-control" name="beschrijving" rows="3" placeholder="Beschrijf het kot"></textarea>
+                    <textarea class="form-control" name="beschrijving" rows="3" placeholder="Beschrijf het kot">{{ beschrijving }}</textarea>
                 </div>
 
                 <div class="col-12">
                     <label class="form-label">Foto URL</label>
-                    <input type="text" name="foto" class="form-control" placeholder="URL van foto (optioneel)">
+                    <input type="text" name="foto" class="form-control" placeholder="URL van foto (optioneel)" value="{{ foto }}">
                 </div>
                 {% endif %}
 
                 {% if rol == 'student' %}
-                
-                <!-- Eerst sanitair -->
+
                 <div class="col-md-12">
                     <label class="form-check-label">
-                        <input class="form-check-input" type="checkbox" name="eigen_sanitair">
+                        <input class="form-check-input" type="checkbox" name="eigen_sanitair" {% if eigen_sanitair %}checked{% endif %}>
                         Eigen sanitair
                     </label>
                 </div>
 
-                <!-- Dan keuken -->
                 <div class="col-md-12">
                     <label class="form-check-label">
-                        <input class="form-check-input" type="checkbox" name="eigen_keuken">
+                        <input class="form-check-input" type="checkbox" name="eigen_keuken" {% if eigen_keuken %}checked{% endif %}>
                         Eigen keuken
                     </label>
                 </div>
 
-                <!-- Start & einddatum naast elkaar -->
                 <div class="col-md-6">
                     <label class="form-label">Startdatum</label>
-                    <input type="date" name="startdatum" class="form-control" required>
+                    <input type="date" name="startdatum" class="form-control" value="{{ startdatum }}" required>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Einddatum</label>
-                    <input type="date" name="einddatum" class="form-control" required>
+                    <input type="date" name="einddatum" class="form-control" value="{{ einddatum }}" required>
                 </div>
 
-                <!-- Kotbaas voornaam & achternaam naast elkaar -->
                 <div class="col-md-6">
                     <label class="form-label">Kotbaas voornaam</label>
-                    <input type="text" name="kotbaas_voornaam" class="form-control" required>
+                    <input type="text" name="kotbaas_voornaam" class="form-control" value="{{ kotbaas_voornaam }}" required>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Kotbaas achternaam</label>
-                    <input type="text" name="kotbaas_achternaam" class="form-control" required>
+                    <input type="text" name="kotbaas_achternaam" class="form-control" value="{{ kotbaas_achternaam }}" required>
                 </div>
 
                 {% else %}
-                <!-- Voor kotbaas/admin blijft alles zoals het was -->
-
                 <div class="col-md-6">
                     <label class="form-check-label">
-                        <input class="form-check-input" type="checkbox" name="eigen_keuken">
+                        <input class="form-check-input" type="checkbox" name="eigen_keuken" {% if eigen_keuken %}checked{% endif %}>
                         Eigen keuken
                     </label>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-check-label">
-                        <input class="form-check-input" type="checkbox" name="eigen_sanitair">
+                        <input class="form-check-input" type="checkbox" name="eigen_sanitair" {% if eigen_sanitair %}checked{% endif %}>
                         Eigen sanitair
                     </label>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Startdatum</label>
-                    <input type="date" name="startdatum" class="form-control" required>
+                    <input type="date" name="startdatum" class="form-control" value="{{ startdatum }}" required>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Einddatum</label>
-                    <input type="date" name="einddatum" class="form-control" required>
+                    <input type="date" name="einddatum" class="form-control" value="{{ einddatum }}" required>
                 </div>
 
                 {% if rol == 'kotbaas' %}
-                {% set huidige_naam = gebruiker.naam.strip() if gebruiker and gebruiker.naam else '' %}
-                {% set naamdelen = huidige_naam.split(' ', 1) if huidige_naam else [] %}
-
                 <div class="col-md-6">
                     <label class="form-label">Voornaam eigenaar</label>
-                    <input type="text" name="eigenaar_voornaam" class="form-control" value="{{ naamdelen[0] if naamdelen|length > 0 else '' }}" required>
+                    <input type="text" name="eigenaar_voornaam" class="form-control" value="{{ eigenaar_voornaam }}" required>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Achternaam eigenaar</label>
-                    <input type="text" name="eigenaar_achternaam" class="form-control" value="{{ naamdelen[1] if naamdelen|length > 1 else '' }}" required>
+                    <input type="text" name="eigenaar_achternaam" class="form-control" value="{{ eigenaar_achternaam }}" required>
                 </div>
 
                 <div class="col-md-12">
                     <label class="form-label">Naam student</label>
-                    <input type="text" name="student_naam" class="form-control" required>
+                    <input type="text" name="student_naam" class="form-control" value="{{ student_naam }}" required>
                 </div>
                 {% endif %}
 
@@ -173,7 +163,7 @@
 
                 <div class="col-12">
                     <label class="form-check-label">
-                        <input class="form-check-input" type="checkbox" name="initiatiefnemer" value="1">
+                        <input class="form-check-input" type="checkbox" name="initiatiefnemer" value="1" {% if initiatiefnemer %}checked{% endif %}>
                         Ik ben initiatiefnemer van dit kot
                     </label>
                 </div>
