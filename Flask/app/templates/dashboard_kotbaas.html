@@ -19,6 +19,23 @@
 
 <div class="container">
 
+    <!-- ROL SWITCHER -->
+    {% if rollen|length > 1 %}
+    <div class="switcher-box">
+        <form method="post">
+            <label><strong>Wissel dashboard:</strong>
+                <select name="switch_rol" onchange="this.form.submit();">
+                    {% for rolnaam in rollen %}
+                        <option value="{{ rolnaam }}" {% if actieve_rol == rolnaam %}selected{% endif %}>
+                            {{ rolnaam.title() }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </label>
+        </form>
+    </div>
+    {% endif %}
+
     <!-- KOT TOEVOEGEN -->
     <form action="{{ url_for('add_kot') }}" class="top-btn">
         <button type="submit" class="btn-primary">+ Voeg een kot toe</button>

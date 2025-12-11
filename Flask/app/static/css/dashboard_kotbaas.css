@@ -30,7 +30,21 @@ header {
 .container {
     width: 92%;
     max-width: 900px;
-    margin: 40px auto;
+    margin: 30px auto;
+}
+
+/* Rol switcher */
+.switcher-box {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+}
+
+.switcher-box select {
+    padding: 8px 12px;
+    border-radius: 6px;
 }
 
 h2 {
@@ -84,6 +98,7 @@ h2 {
 .top-btn {
     margin-bottom: 30px;
 }
+
 
 .inbox-card {
     background: white;

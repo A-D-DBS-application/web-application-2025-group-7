@@ -746,12 +746,34 @@ def register_routes(app):
         return redirect(url_for('index'))
 
 
-    @app.route('/dashboard_kotbaas')
+    @app.route('/dashboard_kotbaas', methods=['GET', 'POST'])
     def dashboard_kotbaas():
         if 'gebruiker_id' not in session or session.get('rol') != 'kotbaas':
             return redirect(url_for('login'))
 
-        kotbaas = Kotbaas.query.get(session['gebruiker_id'])
+        gebruiker = Gebruiker.query.get_or_404(session['gebruiker_id'])
+        kotbaas = Kotbaas.query.get(gebruiker.gebruiker_id)
+        if not kotbaas:
+            flash('Je hebt geen kotbaasrol gekoppeld aan dit account.', 'error')
+            return redirect(url_for('dashboard'))
+
+        rollen = []
+        if gebruiker.student:
+            rollen.append('student')
+        if gebruiker.huurder:
+            rollen.append('huurder')
+        if kotbaas:
+            rollen.append('kotbaas')
+        actieve_rol = session.get('rol', 'kotbaas')
+
+        if request.method == 'POST':
+            gekozen_rol = request.form.get('switch_rol')
+            if gekozen_rol in rollen:
+                session['rol'] = gekozen_rol
+                actieve_rol = gekozen_rol
+                if gekozen_rol != 'kotbaas':
+                    return redirect(url_for('dashboard'))
+
         koten = Kot.query.filter_by(kotbaas_id=kotbaas.gebruiker_id).all()
         pending_koten = Kot.query.filter_by(kotbaas_id=kotbaas.gebruiker_id, goedgekeurd=False).all()
 
@@ -766,7 +788,9 @@ def register_routes(app):
             naam=kotbaas.gebruiker.naam,
             koten=koten,
             pending_koten=pending_koten,
-            contracten_te_ondertekenen=contracten_te_ondertekenen
+            contracten_te_ondertekenen=contracten_te_ondertekenen,
+            rollen=rollen,
+            actieve_rol=actieve_rol
         )
 
 
