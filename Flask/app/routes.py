@@ -322,7 +322,9 @@ def register_routes(app):
                 stad = request.form['stad'].strip()
                 oppervlakte = float(request.form['oppervlakte'])
                 aantal_slaapplaatsen = int(request.form['aantal_slaapplaatsen'])
-                maandhuurprijs = float(request.form['maandhuurprijs'])
+                maandhuurprijs_raw = request.form.get('maandhuurprijs')
+                maandhuurprijs_raw = maandhuurprijs_raw.replace(',', '.')
+                maandhuurprijs = round(float(maandhuurprijs_raw), 2)
                 egwkosten = float(request.form.get('egwkosten') or 0)
             except (KeyError, ValueError):
                 flash('Ongeldige invoer — controleer getallen en verplichte velden.', 'error')
@@ -355,7 +357,15 @@ def register_routes(app):
                 form_data['startdatum'] = ''
                 form_data['einddatum'] = ''
                 return render_template('add_kot.html', rol=rol, gebruiker=gebruiker, **form_data)
-
+            
+            # controleer dat startdatum niet in verleden ligt
+            from datetime import date
+            if startdatum.date() < date.today():
+                flash("Startdatum mag niet in het verleden liggen.", "error")
+                form_data['startdatum'] = ''
+                form_data['einddatum'] = ''
+                return render_template('add_kot.html', rol=rol, gebruiker=gebruiker, **form_data)
+            
             if einddatum <= startdatum:
                 flash("Einddatum moet later zijn dan startdatum.", "error")
                 # alleen datums leegmaken

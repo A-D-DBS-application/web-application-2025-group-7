@@ -29,9 +29,14 @@ def bereken_aangeraden_prijs(oppervlakte, slaapplaatsen, stad=None, window_days=
         Kot.maandhuurprijs.isnot(None)
     )
 
-    #Optioneel filter op stad
-    if stad and stad.strip():
-        base_query = base_query.filter(Kot.stad.ilike(f"%{stad}%"))
+    # Optioneel filter op stad (spaties verwijderen en case-insensitive vergelijken)
+    if stad:
+        stad_clean = stad.strip()
+        if stad_clean:
+            base_query = base_query.filter(
+                func.lower(Kot.stad).like(f"%{stad_clean.lower()}%")
+        )
+
 
     #Bereken gemiddelde maandhuurprijs van de vergelijkbare koten
     gemiddelde_prijs = base_query.with_entities(func.avg(Kot.maandhuurprijs)).scalar()
