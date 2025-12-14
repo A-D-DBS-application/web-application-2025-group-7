@@ -1,0 +1,177 @@
+/* ========== FILTER PANEL ========== */
+.filter-panel {
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.07);
+    border: 1px solid rgba(0, 59, 149, 0.08);
+}
+
+.filter-panel form {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-panel select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #cfd8ea;
+    margin-bottom: 0;
+}
+
+/* ========== FILTER FORM ========== */
+.filter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ========== FILTER GRID ========== */
+.filter-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.filter-field {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-field label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #002a70;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0;
+}
+
+.filter-field input {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #cfd8ea;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.filter-grid .filter-field {
+    flex: 1;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-grid label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #002a70;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0;
+    margin-bottom: 4px;
+}
+
+.filter-grid input,
+.filter-grid select {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #cfd8ea;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.filter-grid select option {
+    font-weight: 500;
+}
+
+/* ========== FILTER ACTIONS ========== */
+.filter-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 12px;
+}
+
+/* ========== INDEX PAGE STYLES ========== */
+.filter-box input[type="text"],
+.filter-box input[type="number"],
+.filter-box input[type="date"] {
+    padding: 8px;
+    margin: 5px 0;
+    width: 200px;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.filter-box label {
+    display: inline-block;
+    margin-right: 10px;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.filter-box input[type="checkbox"] {
+    width: auto;
+    margin: 0 5px 0 0;
+    margin-bottom: 0;
+    display: inline-block;
+}
+
+@media (max-width: 1024px) {
+    .filter-box input[type="text"],
+    .filter-box input[type="number"],
+    .filter-box input[type="date"] {
+        width: 150px;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-box input[type="text"],
+    .filter-box input[type="number"],
+    .filter-box input[type="date"] {
+        width: 100%;
+        display: block;
+        margin-bottom: 10px;
+        margin-right: 0;
+    }
+    
+    .filter-box label {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .filter-panel {
+        padding: 12px;
+    }
+
+    .filter-grid {
+        gap: 10px;
+    }
+
+    .filter-field {
+        min-width: 150px;
+    }
+
+    .filter-grid .filter-field {
+        min-width: 140px;
+    }
+
+    .filter-actions {
+        justify-content: flex-start;
+    }
+
+    .filter-actions button,
+    .filter-actions a {
+        width: auto;
+    }
+}

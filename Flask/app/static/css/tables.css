@@ -1,0 +1,218 @@
+/* ========== TABLE WRAPPER ========== */
+.table-scroll,
+.booking-wrapper {
+    width: 100%;
+    margin: 0;
+    overflow-x: auto;
+    border-radius: 16px;
+    padding-bottom: 6px;
+}
+
+/* ========== GENERIC TABLE STYLES ========== */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 1rem;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 25px 40px #00000014;
+    table-layout: auto;
+    border: 1px solid rgba(0, 59, 149, 0.12);
+}
+
+/* ========== BOOKING TABLE ========== */
+.booking-table {
+    width: 100%;
+    min-width: 1100px;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 1rem;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 25px 40px #00000014;
+    table-layout: auto;
+    border: 1px solid rgba(0, 59, 149, 0.12);
+}
+
+.booking-table thead {
+    background: linear-gradient(135deg, #f0f6ff, #dfe9ff);
+}
+
+.booking-table th {
+    padding: 16px 20px;
+    font-weight: 700;
+    color: #002a70;
+    border-bottom: 1px solid rgba(0, 59, 149, 0.15);
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.85rem;
+}
+
+.booking-table td {
+    padding: 14px 20px;
+    border-bottom: 1px solid #e6e6e6;
+    color: #2f2f2f;
+    white-space: nowrap;
+}
+
+.booking-table tbody tr:nth-child(even) {
+    background: #f9fbff;
+}
+
+.booking-table tbody tr:hover {
+    background: #eef5ff;
+}
+
+.booking-table tr:last-child td {
+    border-bottom: none;
+}
+
+.booking-table tbody tr.cancelled {
+    background: #fff5f5;
+}
+
+.booking-table tbody tr.cancelled td {
+    color: #8a1f1f;
+}
+
+.booking-table td.actions {
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* ========== CONTRACT TABLE ========== */
+.contract-table {
+    width: 100%;
+    min-width: 1000px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 25px 40px rgba(0, 0, 0, 0.08);
+    font-size: 0.92rem;
+    border: 1px solid rgba(0, 59, 149, 0.12);
+}
+
+.contract-table thead {
+    background: linear-gradient(135deg, #f0f6ff, #dfe9ff);
+}
+
+.contract-table th,
+.contract-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #e6e6e6;
+}
+
+.contract-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* ========== KOT TABLE ========== */
+.kot-table {
+    width: 100%;
+    min-width: 1100px;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 1rem;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 25px 40px rgba(0, 0, 0, 0.08);
+    font-size: 0.85rem;
+    border: 1px solid rgba(0, 59, 149, 0.12);
+}
+
+.kot-table thead {
+    background: linear-gradient(135deg, #f0f6ff, #dfe9ff);
+}
+
+.kot-table th {
+    padding: 10px 12px;
+    font-weight: 700;
+    color: #002a70;
+    border-bottom: 1px solid rgba(0, 59, 149, 0.15);
+    vertical-align: top;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.75rem;
+}
+
+.kot-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e6e6e6;
+    color: #2f2f2f;
+    vertical-align: top;
+}
+
+.kot-table tbody tr:nth-child(even) {
+    background: #f9fbff;
+}
+
+.kot-table tbody tr:hover {
+    background: #eef5ff;
+}
+
+.kot-table tr:last-child td {
+    border-bottom: none;
+}
+
+.kot-table th.numeric,
+.kot-table td.numeric {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.kot-photo {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    max-width: 80px;
+    height: auto;
+}
+
+/* ========== RESPONSIVE TABLES ========== */
+@media (max-width: 1024px) {
+    .booking-table,
+    .contract-table,
+    .kot-table {
+        min-width: auto;
+        font-size: 0.85rem;
+    }
+
+    .booking-table th,
+    .booking-table td,
+    .contract-table th,
+    .contract-table td,
+    .kot-table th,
+    .kot-table td {
+        padding: 10px 8px;
+    }
+}
+
+@media (max-width: 768px) {
+    .table-scroll,
+    .booking-wrapper {
+        padding-bottom: 4px;
+    }
+
+    .booking-table,
+    .contract-table,
+    .kot-table {
+        font-size: 0.8rem;
+        min-width: 800px;
+    }
+
+    .booking-table th,
+    .booking-table td,
+    .contract-table th,
+    .contract-table td,
+    .kot-table th,
+    .kot-table td {
+        padding: 8px 6px;
+    }
+}

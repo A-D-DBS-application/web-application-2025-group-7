@@ -1,0 +1,338 @@
+/* ========== GENERIC CARD ========== */
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.card h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.card form {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ========== CONTENT CARD ========== */
+.content-card {
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    margin-bottom: 25px;
+    width: 100%;
+}
+
+/* ========== KOT CARD ========== */
+.kot-card {
+    background: white;
+    padding: 0;
+    border-radius: 14px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0;
+    border: 1px solid transparent;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.kot-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.kot-card.cancelled {
+    background: #fff5f5;
+    border-color: #f3c0c0;
+}
+
+.kot-card form {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.kot-card .action-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.kot-info {
+    padding: 15px 18px 20px 18px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.kot-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.kot-location {
+    color: #6c757d;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.kot-price {
+    font-weight: 600;
+    font-size: 17px;
+    color: #0d6efd;
+    margin-top: 10px;
+}
+
+/* ========== KOT GRID ========== */
+.kot-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* ========== EDIT CARD ========== */
+.edit-card {
+    background: white;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+}
+
+.edit-card label {
+    font-weight: bold;
+    color: #003b95;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.edit-card input[type="text"],
+.edit-card textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-top: 4px;
+    font-size: 14px;
+}
+
+.current-photo {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.current-photo img {
+    max-width: 220px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+/* ========== BOOK CARD ========== */
+.book-card {
+    background: white;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+.book-card h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.book-card form {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+/* ========== SWITCHER BOX ========== */
+.switcher-box {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 25px;
+}
+
+.switcher-box select {
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+/* ========== FILTER BOX ========== */
+.filter-box {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 25px;
+}
+
+/* ========== TAX PANEL ========== */
+.tax-panel {
+    margin-bottom: 20px;
+    background: #f8fbff;
+    border-radius: 16px;
+    padding: 16px 20px;
+    border: 1px solid rgba(0, 59, 149, 0.12);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+}
+
+.tax-panel h3 {
+    margin-top: 0;
+    margin-bottom: 6px;
+    color: #003b95;
+}
+
+.tax-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.tax-form input {
+    max-width: 200px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #cfd8ea;
+    font-size: 1rem;
+}
+
+.tax-panel small {
+    display: block;
+    color: #4f5a6d;
+    margin-top: 8px;
+}
+
+/* ========== ZOOM SURFACE ========== */
+.zoom-surface {
+    width: 100%;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 10px 0;
+}
+
+.zoom-content {
+    transform-origin: top center;
+    transition: transform 0.1s ease-out;
+    display: inline-block;
+}
+
+.zoom-hint {
+    text-align: center;
+    color: #4f5a6d;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+/* ========== RESPONSIVE CARDS ========== */
+@media (max-width: 1200px) {
+    .kot-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .card,
+    .content-card,
+    .book-card,
+    .edit-card {
+        padding: 15px;
+    }
+
+    .kot-card {
+        padding: 0;
+    }
+
+    .kot-card img {
+        height: 150px;
+    }
+
+    .edit-card {
+        max-width: 100%;
+    }
+
+    .current-photo img {
+        max-width: 150px;
+    }
+
+    .kot-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .switcher-box {
+        padding: 12px 15px;
+    }
+
+    .filter-box {
+        padding: 15px;
+    }
+
+    .tax-panel {
+        padding: 12px 15px;
+    }
+
+    .tax-form {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .tax-form input {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .card,
+    .content-card,
+    .book-card,
+    .edit-card {
+        padding: 12px;
+    }
+
+    .kot-card {
+        padding: 12px;
+    }
+
+    .kot-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .current-photo img {
+        max-width: 120px;
+    }
+
+    .kot-info {
+        padding: 10px 12px 15px 12px;
+    }
+
+    .switcher-box {
+        padding: 10px 12px;
+    }
+
+    .filter-box {
+        padding: 12px;
+    }
+}
