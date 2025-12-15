@@ -8,6 +8,22 @@ body {
     padding: 0;
 }
 
+/* ========== ERROR TEXT STYLES ========== */
+/* Ensure flashed error messages and inline error texts are clearly red */
+.msg-error,
+.messages .msg-error,
+.flash-messages li.msg-error,
+.error-text,
+.info-line.error {
+    color: #d40000;
+}
+
+.msg-error {
+    background: #fff5f5;
+    border-left: 4px solid #d40000;
+}
+
+
 /* ========== HEADER ========== */
 header {
     background-color: #003b95;
@@ -15,7 +31,9 @@ header {
     padding: 20px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    position: relative;
+    min-height: 100px;
 }
 
 header h1 {
@@ -66,6 +84,12 @@ header h1 {
     fill: #003b95;
 }
 
+.auth-links {
+    position: absolute;
+    right: 20px;
+    top: 50px;
+}
+
 .auth-links a {
     color: #fff;
     text-decoration: none;
@@ -84,17 +108,40 @@ header h1 {
 @media (max-width: 640px) {
     header {
         flex-direction: column;
+        justify-content: center;
+        padding: 15px 20px;
     }
-    .logo-badge,
-    .header-spacer {
+    
+    .logo-badge {
+        position: static;
+        transform: none;
         width: 100%;
         justify-content: center;
+        margin-bottom: 15px;
     }
+    
+    .header-spacer {
+        display: none;
+    }
+    
     .site-title {
         text-align: center;
     }
-    .header-spacer {
-        display: none;
+    
+    .auth-links {
+        position: static;
+        transform: none;
+        right: auto;
+        top: auto;
+        margin-top: 10px;
+        text-align: center;
+    }
+    
+    .auth-links a {
+        margin-left: 5px;
+        margin-right: 5px;
+        font-size: 13px;
+        padding: 6px 10px;
     }
 }
 

@@ -53,7 +53,7 @@
 
             <p class="info-line">Oppervlakte: {{ boeking.kot.oppervlakte }} m²</p>
             <p class="info-line">Slaapplaatsen: {{ boeking.kot.aantal_slaapplaatsen }}</p>
-            <p class="info-line"><strong>Prijs:</strong> €{{ boeking.kot.maandhuurprijs }}/maand</p>
+            <p class="info-line"><strong>Prijs:</strong> €{{ boeking.kot.maandhuurprijs|format_currency }}/maand</p>
             <p class="info-line">
                 <strong>Status:</strong> {{ boeking.status_boeking }}
                 {% if is_cancelled %}

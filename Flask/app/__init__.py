@@ -27,11 +27,23 @@ def format_phone_number(value):
             remainder = remainder[2:]
     return " ".join(parts)
 
+def format_currency(value):
+    """Format a number as currency with exactly 2 decimal places, using comma as separator"""
+    if value is None:
+        return "0,00"
+    try:
+        amount = float(value)
+        # Format with 2 decimal places, using comma as decimal separator
+        return f"{amount:.2f}".replace(".", ",")
+    except (ValueError, TypeError):
+        return "0,00"
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object('app.config.Config')
     db.init_app(app)
     app.add_template_filter(format_phone_number, 'format_phone')
+    app.add_template_filter(format_currency, 'format_currency')
 
     # Import and register your routes
     from . import routes

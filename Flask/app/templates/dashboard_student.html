@@ -51,7 +51,7 @@
             <div class="kot-info">
                 <div class="kot-title">{{ kot.adres }}</div>
                 <div class="kot-location">{{ kot.stad }}</div>
-                <div class="kot-price">Vanaf €{{ kot.maandhuurprijs }} / maand</div>
+                <div class="kot-price">Vanaf €{{ kot.maandhuurprijs|format_currency }} / maand</div>
 
                 {% if kot.beschrijving %}
                     <p class="info-line" style="margin-top:10px;">{{ kot.beschrijving }}</p>

@@ -52,7 +52,7 @@
 
             <p class="info-line">Oppervlakte: {{ kot.oppervlakte }} m²</p>
             <p class="info-line">Slaapplaatsen: {{ kot.aantal_slaapplaatsen }}</p>
-            <p class="info-line">Prijs: <strong>€{{ kot.maandhuurprijs }}/maand</strong></p>
+            <p class="info-line">Prijs: <strong>€{{ kot.maandhuurprijs|format_currency }}/maand</strong></p>
 
             <p class="info-line">Student: {{ kot.student.gebruiker.naam if kot.student else "n.v.t." }}</p>
             <p class="info-line">Initiatiefnemer: {{ kot.initiatiefnemer }}</p>

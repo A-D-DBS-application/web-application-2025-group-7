@@ -21,7 +21,7 @@
 
         <h2>{{ kot.adres }}, {{ kot.stad }}</h2>
         <p style="color:#444; margin-top:5px;">
-            <strong>Prijs:</strong> €{{ kot.maandhuurprijs }} / maand
+            <strong>Prijs:</strong> €{{ kot.maandhuurprijs|format_currency }} / maand
         </p>
 
         <!-- Meldingen -->

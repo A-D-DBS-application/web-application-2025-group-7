@@ -24,13 +24,13 @@
     </p>
 
     <p class="info-line">
-        Maandhuur: €{{ boeking.kot.maandhuurprijs }} / maand
+        Maandhuur: €{{ boeking.kot.maandhuurprijs|format_currency }} / maand
     </p>
 
     <div class="highlight">
         <p class="info-line"><strong>Te betalen bedrag voor deze periode:</strong></p>
         <p class="info-line" style="font-size:1.2rem; font-weight:bold;">
-            €{{ totaal_bedrag }}
+            €{{ totaal_bedrag|format_currency }}
         </p>
     </div>
 

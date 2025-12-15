@@ -18,7 +18,7 @@
             alt="Gitoo logo">
     </div>
     
-    <div class="auth-links" style="position:absolute; right:20px; top:20px;">
+    <div class="auth-links" style="position:absolute; right:20px; top:50px;">
         {% if session.get('gebruiker_id') or session.get('rol') == 'admin' %}
             {% if session.get('rol') %}
                 {% set rol = session.get('rol') %}
@@ -89,7 +89,7 @@
 
                 <div class="kot-details">{{ kot.oppervlakte }} m² • {{ kot.aantal_slaapplaatsen }} slaapplaatsen</div>
 
-                <div class="price-tag">Vanaf €{{ kot.maandhuurprijs }}/maand</div>
+                <div class="price-tag">Vanaf €{{ kot.maandhuurprijs|format_currency }}/maand</div>
 
                 {% if kot.beschrijving %}
                     <p style="margin-top:10px;">{{ kot.beschrijving }}</p>
