@@ -104,10 +104,3 @@ CREATE TABLE public.student (
   CONSTRAINT student_pkey PRIMARY KEY (gebruiker_id),
   CONSTRAINT student_gebruiker_id_fkey FOREIGN KEY (gebruiker_id) REFERENCES public.gebruiker(gebruiker_id)
 );
-
-CREATE TABLE public.systeem_instelling (
-  sleutel character varying NOT NULL,
-  waarde character varying NOT NULL,
-  created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT systeem_instelling_pkey PRIMARY KEY (sleutel)
-);
