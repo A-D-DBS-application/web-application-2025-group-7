@@ -7,6 +7,7 @@ CREATE TABLE public.beschikbaarheid (
   startdatum timestamp without time zone NOT NULL,
   einddatum timestamp without time zone NOT NULL,
   status_beschikbaarheid character varying CHECK (status_beschikbaarheid::text = ANY (ARRAY['beschikbaar'::character varying, 'bezet'::character varying, 'onder_optie'::character varying]::text[])),
+  created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT beschikbaarheid_pkey PRIMARY KEY (beschikbaarheid_id),
   CONSTRAINT beschikbaarheid_kot_id_fkey FOREIGN KEY (kot_id) REFERENCES public.kot(kot_id)
 );
@@ -20,6 +21,7 @@ CREATE TABLE public.boeking (
   totaalprijs numeric,
   status_boeking character varying,
   aantal_personen integer NOT NULL DEFAULT 1,
+  created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT boeking_pkey PRIMARY KEY (boeking_id),
   CONSTRAINT boeking_gebruiker_id_fkey FOREIGN KEY (gebruiker_id) REFERENCES public.huurder(gebruiker_id),
   CONSTRAINT boeking_kot_id_fkey FOREIGN KEY (kot_id) REFERENCES public.kot(kot_id)
@@ -36,6 +38,7 @@ CREATE TABLE public.contract (
   pad_student character varying,
   aangemaakt_op timestamp without time zone,
   laatst_bijgewerkt_op timestamp without time zone,
+  created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT contract_pkey PRIMARY KEY (contract_id),
   CONSTRAINT contract_kot_id_fkey FOREIGN KEY (kot_id) REFERENCES public.kot(kot_id),
   CONSTRAINT contract_student_id_fkey FOREIGN KEY (student_id) REFERENCES public.student(gebruiker_id),
@@ -49,6 +52,7 @@ CREATE TABLE public.gebruiker (
   telefoon character varying,
   type character varying CHECK (type::text = ANY (ARRAY['student'::character varying, 'huurder'::character varying, 'kotbaas'::character varying]::text[])),
   aangemaakt_op timestamp without time zone DEFAULT now(),
+  created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT gebruiker_pkey PRIMARY KEY (gebruiker_id)
 );
 
@@ -56,6 +60,7 @@ CREATE TABLE public.huurder (
   gebruiker_id integer NOT NULL,
   voorkeuren text DEFAULT ''::text,
   gesproken_taal character varying,
+  created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT huurder_pkey PRIMARY KEY (gebruiker_id),
   CONSTRAINT huurder_gebruiker_id_fkey FOREIGN KEY (gebruiker_id) REFERENCES public.gebruiker(gebruiker_id)
 );
@@ -77,6 +82,7 @@ CREATE TABLE public.kot (
   kotbaas_id integer,
   initiatiefnemer character varying CHECK (initiatiefnemer::text = ANY (ARRAY['student'::text, 'kotbaas'::text])),
   beschrijving text,
+  created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT kot_pkey PRIMARY KEY (kot_id),
   CONSTRAINT kot_new_student_id_fkey FOREIGN KEY (student_id) REFERENCES public.student(gebruiker_id),
   CONSTRAINT kot_new_kotbaas_id_fkey FOREIGN KEY (kotbaas_id) REFERENCES public.kotbaas(gebruiker_id)
@@ -85,6 +91,7 @@ CREATE TABLE public.kot (
 CREATE TABLE public.kotbaas (
   gebruiker_id integer NOT NULL,
   initiatiefnemer boolean DEFAULT false,
+  created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT kotbaas_pkey PRIMARY KEY (gebruiker_id),
   CONSTRAINT kotbaas_gebruiker_id_fkey FOREIGN KEY (gebruiker_id) REFERENCES public.gebruiker(gebruiker_id)
 );
@@ -93,6 +100,14 @@ CREATE TABLE public.student (
   gebruiker_id integer NOT NULL,
   universiteit character varying,
   initiatiefnemer boolean DEFAULT false,
+  created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT student_pkey PRIMARY KEY (gebruiker_id),
   CONSTRAINT student_gebruiker_id_fkey FOREIGN KEY (gebruiker_id) REFERENCES public.gebruiker(gebruiker_id)
+);
+
+CREATE TABLE public.systeem_instelling (
+  sleutel character varying NOT NULL,
+  waarde character varying NOT NULL,
+  created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT systeem_instelling_pkey PRIMARY KEY (sleutel)
 );
