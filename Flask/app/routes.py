@@ -1,6 +1,6 @@
 from operator import and_
 from warnings import filters
-from flask import render_template, request, redirect, url_for, session, flash, send_file
+from flask import render_template, request, redirect, url_for, session, flash, send_file, current_app
 from .prijs_algoritme import bereken_aangeraden_prijs
 from werkzeug.utils import secure_filename
 import os, time
@@ -60,6 +60,55 @@ def save_tourist_tax_amount(new_value):
         setting.waarde = str(new_value)
     db.session.commit()
     return new_value
+
+
+def finalize_registration_redirect(gebruiker_id, rol, email):
+    """Zet sessie-waarden en geef juiste redirect terug op basis van rol."""
+    session['gebruiker_id'] = gebruiker_id
+    if email.endswith('@gitoo.be'):
+        session['rol'] = 'admin'
+        return redirect(url_for('dashboard_admin'))
+    session['rol'] = rol
+    if rol == 'kotbaas':
+        return redirect(url_for('dashboard_kotbaas'))
+    return redirect(url_for('dashboard'))
+
+
+def upload_contract_file(file_storage, kot_id, uploader_label):
+    """Valideer en sla contractbestand op; retourneer (pad, foutmelding)."""
+    if not file_storage or not file_storage.filename:
+        return None, "Upload een bestand."
+    if not allowed_contract_file(file_storage.filename):
+        return None, "Bestandstype niet toegestaan. Gebruik pdf, png, jpg of jpeg."
+
+    filename = secure_filename(file_storage.filename)
+    ext = os.path.splitext(filename)[1].lower()
+    unique_name = f"kot{kot_id}_{uploader_label}_{int(time.time())}{ext}"
+    save_path = os.path.join(current_app.static_folder, 'contracts')
+    os.makedirs(save_path, exist_ok=True)
+    full_path = os.path.join(save_path, unique_name)
+    file_storage.save(full_path)
+    static_rel = f"contracts/{unique_name}"
+    return url_for('static', filename=static_rel), None
+
+
+def save_kot_photo_upload(file_storage, kot_id, prefix='kot'):
+    """Valideer en sla upload voor kotfoto; retourneer (url, foutmelding)."""
+    if not file_storage or not file_storage.filename:
+        return None, None
+    allowed = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
+    filename = secure_filename(file_storage.filename)
+    ext = os.path.splitext(filename)[1].lower()
+    if ext not in allowed:
+        return None, 'Bestandstype niet toegestaan. Gebruik jpg, jpeg, png, gif of webp.'
+
+    uploads_dir = os.path.join(current_app.static_folder, 'uploads')
+    os.makedirs(uploads_dir, exist_ok=True)
+    unique_name = f"{prefix}{kot_id}_{int(time.time())}{ext}"
+    save_path = os.path.join(uploads_dir, unique_name)
+    file_storage.save(save_path)
+    static_rel = f"uploads/{unique_name}"
+    return url_for('static', filename=static_rel), None
 
 def register_routes(app):
 
@@ -157,15 +206,7 @@ def register_routes(app):
                     kotbaas = Kotbaas(gebruiker_id=bestaande_gebruiker.gebruiker_id)
                     db.session.add(kotbaas)
                     db.session.commit()
-                session['gebruiker_id'] = bestaande_gebruiker.gebruiker_id
-                if email.endswith('@gitoo.be'):
-                    session['rol'] = 'admin'
-                    return redirect(url_for('dashboard_admin'))
-                session['rol'] = rol
-                if rol == 'kotbaas':
-                    return redirect(url_for('dashboard_kotbaas'))
-                else:
-                    return redirect(url_for('dashboard'))
+                return finalize_registration_redirect(bestaande_gebruiker.gebruiker_id, rol, email)
             else:
                 gebruiker = Gebruiker(
                     naam=naam,
@@ -189,15 +230,7 @@ def register_routes(app):
                     kotbaas = Kotbaas(gebruiker_id=gebruiker.gebruiker_id)
                     db.session.add(kotbaas)
                 db.session.commit()
-                session['gebruiker_id'] = gebruiker.gebruiker_id
-                if email.endswith('@gitoo.be'):
-                    session['rol'] = 'admin'
-                    return redirect(url_for('dashboard_admin'))
-                session['rol'] = rol
-                if rol == 'kotbaas':
-                    return redirect(url_for('dashboard_kotbaas'))
-                else:
-                    return redirect(url_for('dashboard'))
+                return finalize_registration_redirect(gebruiker.gebruiker_id, rol, email)
         return render_template('register.html')
 
 
@@ -724,21 +757,11 @@ def register_routes(app):
         # 1) If a file is uploaded, save it under static/uploads and set foto to its URL
         file = request.files.get('foto_file')
         if file and file.filename:
-            filename = secure_filename(file.filename)
-            # allow only common image extensions
-            allowed = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
-            ext = os.path.splitext(filename)[1].lower()
-            if ext in allowed:
-                uploads_dir = os.path.join(app.static_folder, 'uploads')
-                os.makedirs(uploads_dir, exist_ok=True)
-                unique_name = f"kot{kot_id}_{int(time.time())}{ext}"
-                save_path = os.path.join(uploads_dir, unique_name)
-                file.save(save_path)
-                # store absolute static path so templates don't need changes
-                static_rel = f"uploads/{unique_name}"
-                kot.foto = url_for('static', filename=static_rel)
+            foto_url, error = save_kot_photo_upload(file, kot_id)
+            if error:
+                flash(error, 'error')
             else:
-                flash('Bestandstype niet toegestaan. Gebruik jpg, jpeg, png, gif of webp.', 'error')
+                kot.foto = foto_url
         else:
             # 2) Fallback to URL field if provided
             nieuwe_foto = request.form.get('foto', '').strip()
@@ -820,24 +843,12 @@ def register_routes(app):
             return redirect(url_for('dashboard_kotbaas'))
 
         if request.method == 'POST':
-            file = request.files.get('contract_file')
-            if not file or not file.filename:
-                flash("Upload een bestand.", "error")
+            pad, error = upload_contract_file(request.files.get('contract_file'), kot_id, 'kotbaas')
+            if error:
+                flash(error, "error")
                 return redirect(url_for('contract_kotbaas', kot_id=kot_id))
 
-            if not allowed_contract_file(file.filename):
-                flash("Bestandstype niet toegestaan. Gebruik pdf, png, jpg of jpeg.", "error")
-                return redirect(url_for('contract_kotbaas', kot_id=kot_id))
-
-            filename = secure_filename(file.filename)
-            unique_name = f"kot{kot_id}_kotbaas_{int(time.time())}{os.path.splitext(filename)[1].lower()}"
-            save_path = os.path.join(app.static_folder, 'contracts')
-            os.makedirs(save_path, exist_ok=True)
-            full_path = os.path.join(save_path, unique_name)
-            file.save(full_path)
-
-            static_rel = f"contracts/{unique_name}"
-            contract.pad_kotbaas = url_for('static', filename=static_rel)
+            contract.pad_kotbaas = pad
             contract.status_contract = 'wachten_op_student'
             db.session.commit()
 
@@ -863,24 +874,12 @@ def register_routes(app):
             return redirect(url_for('dashboard'))
 
         if request.method == 'POST':
-            file = request.files.get('contract_file')
-            if not file or not file.filename:
-                flash("Upload een bestand.", "error")
+            pad, error = upload_contract_file(request.files.get('contract_file'), kot_id, 'student')
+            if error:
+                flash(error, "error")
                 return redirect(url_for('contract_student', kot_id=kot_id))
 
-            if not allowed_contract_file(file.filename):
-                flash("Bestandstype niet toegestaan. Gebruik pdf, png, jpg of jpeg.", "error")
-                return redirect(url_for('contract_student', kot_id=kot_id))
-
-            filename = secure_filename(file.filename)
-            unique_name = f"kot{kot_id}_student_{int(time.time())}{os.path.splitext(filename)[1].lower()}"
-            save_path = os.path.join(app.static_folder, 'contracts')
-            os.makedirs(save_path, exist_ok=True)
-            full_path = os.path.join(save_path, unique_name)
-            file.save(full_path)
-
-            static_rel = f"contracts/{unique_name}"
-            contract.pad_student = url_for('static', filename=static_rel)
+            contract.pad_student = pad
             contract.status_contract = 'compleet'
             db.session.commit()
 
@@ -1067,19 +1066,11 @@ def register_routes(app):
             # Foto via upload
             file = request.files.get('foto_file')
             if file and file.filename:
-                filename = secure_filename(file.filename)
-                allowed = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
-                ext = os.path.splitext(filename)[1].lower()
-                if ext in allowed:
-                    uploads_dir = os.path.join(app.static_folder, 'uploads')
-                    os.makedirs(uploads_dir, exist_ok=True)
-                    unique_name = f"kot{kot_id}_{int(time.time())}{ext}"
-                    save_path = os.path.join(uploads_dir, unique_name)
-                    file.save(save_path)
-                    static_rel = f"uploads/{unique_name}"
-                    kot.foto = url_for('static', filename=static_rel)
+                upload_url, error = save_kot_photo_upload(file, kot_id)
+                if error:
+                    flash(error, 'error')
                 else:
-                    flash('Bestandstype niet toegestaan.', 'error')
+                    kot.foto = upload_url
             elif foto_url:
                 kot.foto = foto_url
             db.session.commit()
