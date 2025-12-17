@@ -175,3 +175,18 @@
         width: auto;
     }
 }
+/* ========== INFO ICON TOOLTIP ========== */
+.info-icon {
+    cursor: help;
+    margin-left: 0.5rem;
+}
+
+#initiatiefnemer-tooltip {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: #495057;
+}
