@@ -97,7 +97,7 @@
 
                 {% if kot.beschikbaarheden %}
                     {% for b in kot.beschikbaarheden %}
-                        <p><strong>Beschikbaar:</strong> {{ b.startdatum.strftime('%Y-%m-%d') }} → {{ b.einddatum.strftime('%Y-%m-%d') }}</p>
+                        <p><strong>Beschikbaar:</strong> {{ b.startdatum.strftime('%d/%m/%Y') }} → {{ b.einddatum.strftime('%d/%m/%Y') }}</p>
                     {% endfor %}
                 {% endif %}
 
