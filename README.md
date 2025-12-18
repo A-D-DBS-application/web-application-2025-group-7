@@ -58,13 +58,13 @@ Hieronder volgt een beknopt overzicht van de stappen die doorlopen worden wannee
 
 ## Link to UI prototype (if used)
 
-    We hebben kort geëxperimenteerd met UI‑prototypes in Lovable en Figma, maar deze zijn nooit uitgewerkt tot een volwaardig, gedeeld prototype. Uiteindelijk hebben we vooral rechtstreeks met HTML en CSS gewerkt, waarbij we AI‑ondersteuning gebruikten om de gebruikersinterface te ontwerpen en te verfijnen. Er is daarom geen stabiele URL naar een UI‑prototype beschikbaar.
+We hebben kort geëxperimenteerd met UI‑prototypes in Lovable en Figma, maar deze zijn nooit uitgewerkt tot een volwaardig, gedeeld prototype. Uiteindelijk hebben we vooral rechtstreeks met HTML en CSS gewerkt, waarbij we AI‑ondersteuning gebruikten om de gebruikersinterface te ontwerpen en te verfijnen. Er is daarom geen stabiele URL naar een UI‑prototype beschikbaar.
 
 ## Link to Kanban board (if used)
 
-    Voor dit project hebben we geen apart online Kanban-board gebruikt. We hebben kort geëxperimenteerd met Miro, maar merkten al snel dat deze manier van werken niet goed aansloot bij ons kleine team van vier studenten.
+Voor dit project hebben we geen apart online Kanban-board gebruikt. We hebben kort geëxperimenteerd met Miro, maar merkten al snel dat deze manier van werken niet goed aansloot bij ons kleine team van vier studenten.
 
-    In plaats daarvan hebben we ons werk gecoördineerd via een gedeelde messengergroep. Na elke les over het project en na elke feedbacksessie met Gitoo maakten we samen een lijst met taken op korte termijn, die we onder elkaar verdeelden. Vragen, het delen van bestanden en voortgangsupdates verliepen allemaal via deze messengergroep.
+In plaats daarvan hebben we ons werk gecoördineerd via een gedeelde messengergroep. Na elke les over het project en na elke feedbacksessie met Gitoo maakten we samen een lijst met taken op korte termijn, die we onder elkaar verdeelden. Vragen, het delen van bestanden en voortgangsupdates verliepen allemaal via deze messengergroep.
 
 ## Link to audio/video recording of feedback sessions with partner
 
