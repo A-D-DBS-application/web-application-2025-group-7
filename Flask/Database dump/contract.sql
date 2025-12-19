@@ -1,0 +1,1 @@
+INSERT INTO "public"."contract" ("contract_id", "kot_id", "student_id", "kotbaas_id", "status_contract", "pad_contract_sjabloon", "pad_kotbaas", "pad_student", "aangemaakt_op", "laatst_bijgewerkt_op") VALUES ('5', '23', '110', '109', 'wachten_op_student', null, '/static/contracts/kot23_kotbaas_1765991892.png', null, '2025-12-17 17:12:08.580965', '2025-12-17 17:18:12.460577');
