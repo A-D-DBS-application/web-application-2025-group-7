@@ -1,0 +1,1 @@
+INSERT INTO "public"."kotbaas" ("gebruiker_id", "initiatiefnemer") VALUES ('95', 'false'), ('96', 'false'), ('97', 'false'), ('99', 'false'), ('101', 'false'), ('107', 'false'), ('109', 'false');
