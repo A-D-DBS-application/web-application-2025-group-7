@@ -74,3 +74,9 @@ In onze presentatie hebben we daarom screenshots opgenomen van de e-mailconversa
 
 
 ## Other links/info
+
+Database design: https://supabase.com/dashboard/project/lkvstjspyeslqzzjmyca/database/schemas
+
+Render: https://gitoo.onrender.com
+
+
