@@ -1,0 +1,1 @@
+INSERT INTO "public"."systeem_instelling" ("sleutel", "waarde") VALUES ('tourist_tax_per_person_per_night', '6.0');
